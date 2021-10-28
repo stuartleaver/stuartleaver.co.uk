@@ -11,17 +11,20 @@
       </div>
     </header>
     <router-view />
+    <SiteFooter />
   </div>
 </template>
 
 <script>
 // @ is an alias to /src
 import SiteTitle from "@/components/SiteTitle.vue";
+import SiteFooter from "@/components/SiteFooter.vue";
 
 export default {
   name: "App",
   components: {
     SiteTitle,
+    SiteFooter
   },
 };
 </script>

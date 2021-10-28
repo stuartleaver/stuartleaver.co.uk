@@ -81,7 +81,6 @@ a.router-link-active {
   font-family: "Roboto", Helvetica, sans-serif;
   font-weight: 400;
   font-style: normal;
-  background-color: #f5f5f5;
   @apply text-base;
 }
 

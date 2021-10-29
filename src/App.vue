@@ -24,7 +24,7 @@ export default {
   name: "App",
   components: {
     SiteTitle,
-    SiteFooter
+    SiteFooter,
   },
 };
 </script>

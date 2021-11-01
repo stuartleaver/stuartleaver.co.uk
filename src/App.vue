@@ -34,7 +34,7 @@ export default {
 }
 
 .header-content {
-  @apply max-w-5xl mx-auto;
+  @apply max-w-5xl mx-auto pb-8;
 }
 
 .site-menu {
@@ -47,7 +47,7 @@ export default {
 }
 
 .site-menu a:last-child {
-  @apply pr-0;
+  @apply mr-0;
 }
 
 .site-menu a:hover {

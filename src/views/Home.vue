@@ -31,7 +31,27 @@
             </div>
           </div>
         </div>
-        <div class="page-content">Content</div>
+        <div class="page-content">
+          <div class="about-me">
+            <div class="about-me-title">
+              <h3>About <span>Me</span></h3>
+            </div>
+            <p>
+              Passionate, responsible and committed engineer, with a
+              get-it-done, on-time spirit, with more than 10 years’ experience
+              delivering products to supply and support critical insight and
+              information data using Microsoft Technologies, C#, n-tier
+              architecture and more. Microsoft Certified Azure Developer and
+              proficient in C#, best practices, design patterns and the software
+              development lifecycle and communicating both within teams based
+              across the globe and with stakeholders to illicit and understand
+              functional requirements.
+            </p>
+          </div>
+          <div class="download-cv">
+            <a href="" class="cv-button">Download CV</a>
+          </div>
+        </div>
       </div>
     </section>
   </div>
@@ -53,11 +73,11 @@ export default {
 }
 
 .section-inner {
-  @apply rounded-2xl overflow-hidden;
+  @apply rounded-2xl overflow-hidden bg-white;
 }
 
 .page-header {
-  @apply bg-blue-500 p-12;
+  @apply mb-8 bg-blue-500 p-12;
 }
 
 .page-content {
@@ -94,5 +114,29 @@ export default {
 
 .social-media-links a:last-child {
   @apply mr-0;
+}
+
+.page-content {
+  @apply pt-5 px-12 pb-12;
+}
+
+.about-me-title {
+  @apply mt-1 mb-3 text-xl font-semibold text-left;
+}
+
+.about-me-title span {
+  @apply text-blue-500;
+}
+
+.about-me p {
+  @apply text-sm font-normal text-left;
+}
+
+.download-cv {
+  @apply mt-8 text-left;
+}
+
+.cv-button {
+  @apply bg-white hover:shadow-lg font-semibold py-2 px-4 border border-gray-400 rounded shadow;
 }
 </style>

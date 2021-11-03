@@ -6,6 +6,9 @@ module.exports = {
       maxWidth: {
         xxs: "17rem",
       },
+      zIndex: {
+        "-1": "-1",
+      },
     },
   },
   variants: {

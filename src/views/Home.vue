@@ -33,7 +33,7 @@
         </div>
         <div class="page-content">
           <div class="about-me">
-            <div class="about-me-title">
+            <div class="block-title">
               <h3>About <span>Me</span></h3>
             </div>
             <p>
@@ -51,6 +51,10 @@
           <div class="download-cv">
             <a href="" class="cv-button">Download CV</a>
           </div>
+          <div class="testimonials">
+            <div class="block-title">Testimonials</div>
+            <TestimonialItem />
+          </div>
         </div>
       </div>
     </section>
@@ -58,9 +62,13 @@
 </template>
 
 <script>
+import TestimonialItem from "@/components/TestimonialItem.vue";
+
 export default {
   name: "Home",
-  components: {},
+  components: {
+    TestimonialItem,
+  },
 };
 </script>
 
@@ -120,11 +128,11 @@ export default {
   @apply pt-5 px-12 pb-12;
 }
 
-.about-me-title {
+.block-title {
   @apply mt-1 mb-3 text-xl font-semibold text-left;
 }
 
-.about-me-title span {
+.block-title span {
   @apply text-blue-500;
 }
 
@@ -133,7 +141,7 @@ export default {
 }
 
 .download-cv {
-  @apply mt-8 text-left;
+  @apply mt-8 mb-8 text-left;
 }
 
 .cv-button {

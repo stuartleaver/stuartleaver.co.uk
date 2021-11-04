@@ -52,8 +52,14 @@
             <a href="" class="cv-button">Download CV</a>
           </div>
           <div class="testimonials">
-            <div class="block-title">Testimonials</div>
-            <TestimonialItem />
+            <div class="block-title">
+              <h3>Testimonials</h3>
+            </div>
+            <TestimonialItem
+              v-for="testimonial in testimonials"
+              :key="testimonial.author"
+              :testimonial="testimonial"
+            />
           </div>
         </div>
       </div>
@@ -62,12 +68,29 @@
 </template>
 
 <script>
+import axios from "axios";
 import TestimonialItem from "@/components/TestimonialItem.vue";
 
 export default {
   name: "Home",
   components: {
     TestimonialItem,
+  },
+  data() {
+    return {
+      testimonials: [],
+    };
+  },
+  async mounted() {
+    await this.loadTestimonials();
+  },
+  methods: {
+    loadTestimonials: async function () {
+      axios.get("/data/testimonials.json").then((response) => {
+        this.testimonials = response.data;
+        this.itemsLoaded = true;
+      });
+    },
   },
 };
 </script>

@@ -6,13 +6,12 @@
       </div>
       <div class="testimonial-text">
         <p>
-          Donec eu est vel metus consequat volutpat. Nunc aliquet euismod
-          mauris, a feugiat urna ullamcorper non.
+          {{ testimonial.text }}
         </p>
       </div>
       <div class="testimonial-author-info">
-        <h5 class="testimonial-author">John Doe</h5>
-        <p class="testimonial-role">CEO, Company</p>
+        <h5 class="testimonial-author">{{ testimonial.author }}</h5>
+        <p class="testimonial-role">{{ testimonial.role }}</p>
       </div>
       <div class="testimonial-icon">
         <font-awesome-icon :icon="['fa', 'quote-left']" size="sm" />
@@ -23,6 +22,9 @@
 <script>
 export default {
   name: "TestimonialItem",
+  props: {
+    testimonial: Object,
+  },
 };
 </script>
 

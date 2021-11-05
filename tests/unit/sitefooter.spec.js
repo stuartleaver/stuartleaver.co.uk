@@ -9,6 +9,9 @@ describe("SiteFooter.vue", () => {
 
   it("renders the correct copyright", () => {
     const wrapper = shallowMount(SiteFooter);
-    expect(wrapper.find(".copyright").text()).toEqual("© Stuart Leaver");
+    const year = new Date().getFullYear();
+    expect(wrapper.find(".copyright").text()).toEqual(
+      `© Stuart Leaver ${year}`
+    );
   });
 });

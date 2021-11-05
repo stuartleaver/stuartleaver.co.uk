@@ -22,9 +22,9 @@ describe("App.vue", () => {
     expect(wrapper.findAll(".site-menu-item").at(0).text()).toEqual("Home");
   });
 
-  it("renders the 'About' menu option'", () => {
+  it("renders the 'CV' menu option'", () => {
     const wrapper = shallowMount(App);
-    expect(wrapper.findAll(".site-menu-item").at(1).text()).toEqual("About");
+    expect(wrapper.findAll(".site-menu-item").at(1).text()).toEqual("CV");
   });
 
   it("renders the 'Blog' menu option'", () => {

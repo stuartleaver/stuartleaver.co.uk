@@ -1,12 +1,18 @@
 [
     {
-        "text": "Donec eu est vel metus consequat volutpat. Nunc aliquet euismod mauris, a feugiat urna ullamcorper non.",
-        "author": "John Doe",
-        "role": "CEO Company"
+        "text": "I worked with Stuart on developing monitoring, configuration management and service level management solutions for Cubic's OSS for TfL contactless payment system. The project was always interesting and challenging and working with Stuart was a pleasure. He has a tremendous grasp of technology and the creative and technical ability to develop, automate, test and deploy the right solutions. On top of this, Stuart is very conscientious, good humoured and easy to get along with. I recommend him!",
+        "author": "Martin Caren",
+        "role": "Senior IT Infrastructure and Application Specialist"
     },
     {
-        "text": "Donec eu est vel metus consequat volutpat. Nunc aliquet euismod mauris, a feugiat urna ullamcorper non.",
-        "author": "Jane Doe",
-        "role": "Managing Director Company"
+        "text": "A level-headed, genius, with a flair of performing at his best under pressure, Stuart has been a great mentor, colleague and friend. Over the last few years, he has proven his expertise with handling everything in the project from requirements analysis to delivery of the projects. Would love to work with him anytime in the future, should the stars align again",
+        "author": "Manuj Bahl",
+        "role": "Principle Database Developer"
+    },
+    {
+        "text": "Stuart is a great developer who pays strong attention to detail and is committed to working methodically and accurately. At work he's an expert in C# and SQL combined with a thorough knowledge of the full Microsoft tech stack including Azure. He's also the kind of person who is always tinkering with Raspberry PIs, Python, Java and new tech in his own time - continuously learning. I've seen him mentor junior programmers through code reviews and teamwork. He earns respect from the whole team through his knowledge, his dedication to finding and resolving the root cause of issues and his determination. On a personal level I've always enjoyed working with him because (a) you can always trust his work and (b) he's funny, with a dry sense of humour.",
+        "author": "Stuart Barr",
+        "role": "Contract Developer"
     }
+    
 ]

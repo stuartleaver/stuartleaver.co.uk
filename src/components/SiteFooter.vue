@@ -1,5 +1,9 @@
 <template>
-  <footer><div class="copyright">&copy; Stuart Leaver</div></footer>
+  <footer>
+    <div class="copyright">
+      &copy; Stuart Leaver {{ new Date().getFullYear() }}
+    </div>
+  </footer>
 </template>
 <script>
 export default {
@@ -8,7 +12,7 @@ export default {
 </script>
 <style lang="postcss">
 footer {
-  @apply fixed bottom-0 left-0 right-0;
+  @apply bottom-0 left-0 right-0 mt-5;
 }
 .copyright {
   @apply mb-3 text-center text-xs text-gray-500;

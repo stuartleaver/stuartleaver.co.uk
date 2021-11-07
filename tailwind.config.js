@@ -6,8 +6,11 @@ module.exports = {
       maxWidth: {
         xxs: "17rem",
       },
-      zIndex: {
-        "-1": "-1",
+      boxShadow: {
+        timeline: "0px 0px 3px 0px rgb(0 0 0 / 20%)",
+      },
+      inset: {
+        "-7/5": "-1.87rem",
       },
     },
   },

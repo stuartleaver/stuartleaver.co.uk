@@ -5,7 +5,7 @@
         <SiteTitle first-name="Stuart" last-name="Leaver" />
         <nav class="site-menu flex justify-center items-center">
           <router-link to="/" class="site-menu-item">Home</router-link>
-          <router-link to="/about" class="site-menu-item">About</router-link>
+          <router-link to="/cv" class="site-menu-item">CV</router-link>
           <router-link to="/blog" class="site-menu-item">Blog</router-link>
         </nav>
       </div>

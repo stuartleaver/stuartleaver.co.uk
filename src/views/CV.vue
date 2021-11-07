@@ -10,7 +10,11 @@
             <div class="block-content">
               <BlockTitle title="Education" />
               <div class="timeline">
-                <TimelineItem :timeline-item="this.timelineItem"/>
+                <TimelineItem
+                  v-for="item in educationItems"
+                  :key="item.title"
+                  :timeline-item="item"
+                />
               </div>
             </div>
             <div class="block-content">
@@ -23,6 +27,7 @@
   </div>
 </template>
 <script>
+import axios from "axios";
 import BlockTitle from "@/components/BlockTitle.vue";
 import TimelineItem from "@/components/TimelineItem.vue";
 
@@ -34,13 +39,19 @@ export default {
   },
   data() {
     return {
-      timelineItem: {
-        title: "Bachelor of Science in Computer Science",
-        date: "2011 - 2015",
-        company: "University of Waterloo",
-        description: "Neque porro quisquam est qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit..."
-      }
+      educationItems: [],
     };
+  },
+  async mounted() {
+    await this.loadEducationItems();
+  },
+  methods: {
+    loadEducationItems: async function () {
+      axios.get("/data/education.json").then((response) => {
+        this.educationItems = response.data;
+        console.log(this.educationItems);
+      });
+    },
   },
 };
 </script>

@@ -88,7 +88,6 @@ export default {
     loadTestimonials: async function () {
       axios.get("/data/testimonials.json").then((response) => {
         this.testimonials = response.data;
-        this.itemsLoaded = true;
       });
     },
   },

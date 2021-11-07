@@ -19,6 +19,14 @@
             </div>
             <div class="block-content">
               <BlockTitle title="Experience" />
+
+              <div class="timeline">
+                <TimelineItem
+                  v-for="item in experienceItems"
+                  :key="item.title"
+                  :timeline-item="item"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -40,17 +48,16 @@ export default {
   data() {
     return {
       educationItems: [],
+      experienceItems: [],
     };
   },
   async mounted() {
-    await this.loadEducationItems();
+    this.educationItems = await this.loadItems("education");
+    this.experienceItems = await this.loadItems("experience");
   },
   methods: {
-    loadEducationItems: async function () {
-      axios.get("/data/education.json").then((response) => {
-        this.educationItems = response.data;
-        console.log(this.educationItems);
-      });
+    loadItems: async function (fileName) {
+      return (await axios.get(`/data/${fileName}.json`)).data;
     },
   },
 };

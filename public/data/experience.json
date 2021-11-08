@@ -1,8 +1,38 @@
 [
     {
+        "title": "Senior Software Engineer",
+        "date": "06/2019 - Present",
+        "company": "HX (inc Psyon)",
+        "description": "Working as the lead on several projects with teams of the best minds in specialty insurance, data analytics, insurtech and design to transform insurance from the inside out."
+    },
+    {
+        "title": "IT Developer",
+        "date": "10/2018 - 06/2019",
+        "company": "Cubic Transportation Systems",
+        "description": "Worked across the wider IT Monitoring team and horizontally with the Service, Engineering and Test teams. Ensuring that the primary monitoring tool used by Transport for London is performing correctly and meets the customers’ expectations."
+    },
+    {
+        "title": "IT Developer",
+        "date": "04/2015 - 10/2018",
+        "company": "Cubic Transportation Systems",
+        "description": "Worked across the wider IT Monitoring team and horizontally with the Service, Engineering and Test teams. Ensuring that the primary monitoring tool used by Transport for London is performing correctly and meets the customers’ expectations."
+    },
+    {
+        "title": "Senior Software Engineer",
+        "date": "02/2013 - 04/2015",
+        "company": "IHS",
+        "description": "Working within a team of 35 people across different countries using agile methodologies to develop and maintain applications and ETL’s used within the company for creating business critical content and insight mainly within the Maritime and Defence business lines."
+    },
+    {
         "title": "Software Engineer",
-        "date": "2011 - 2015",
-        "company": "Microsoft",
-        "description": "Neque porro quisquam est qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit..."
+        "date": "05/2006 - 02/2013",
+        "company": "IHS",
+        "description": "Working in a small team of developers maintaining and evolving internal and external facing Maritime applications in line with the changing requirements of the business."
+    },
+    {
+        "title": "Software Developer",
+        "date": "06/2002 - 05/2006",
+        "company": "Telegan Protection Ltd",
+        "description": "Responsible for the software and network infrastructure within a small group of companies encompassing fire protection as well as marine and land signage."
     }
 ]

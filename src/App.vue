@@ -6,6 +6,9 @@
         <nav class="site-menu flex justify-center items-center">
           <router-link to="/" class="site-menu-item">Home</router-link>
           <router-link to="/cv" class="site-menu-item">CV</router-link>
+          <router-link to="/certifications" class="site-menu-item"
+            >Certifications</router-link
+          >
           <router-link to="/blog" class="site-menu-item">Blog</router-link>
         </nav>
       </div>

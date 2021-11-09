@@ -14,7 +14,7 @@ describe("App.vue", () => {
 
   it("renders the correct number of options", () => {
     const wrapper = shallowMount(App);
-    expect(wrapper.findAll(".site-menu-item")).toHaveLength(3);
+    expect(wrapper.findAll(".site-menu-item")).toHaveLength(4);
   });
 
   it("renders the 'Home' menu option'", () => {
@@ -27,8 +27,15 @@ describe("App.vue", () => {
     expect(wrapper.findAll(".site-menu-item").at(1).text()).toEqual("CV");
   });
 
+  it("renders the 'Certifications' menu option'", () => {
+    const wrapper = shallowMount(App);
+    expect(wrapper.findAll(".site-menu-item").at(2).text()).toEqual(
+      "Certifications"
+    );
+  });
+
   it("renders the 'Blog' menu option'", () => {
     const wrapper = shallowMount(App);
-    expect(wrapper.findAll(".site-menu-item").at(2).text()).toEqual("Blog");
+    expect(wrapper.findAll(".site-menu-item").at(3).text()).toEqual("Blog");
   });
 });

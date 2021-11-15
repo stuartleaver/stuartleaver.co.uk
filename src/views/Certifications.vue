@@ -44,8 +44,14 @@ export default {
   },
   methods: {
     loadCertifications: async function () {
-      const response = await axios.get("/data/certifications.json");
-      this.certifications = response.data;
+      await axios
+        .get("/data/certifications.json")
+        .then((response) => {
+          this.certifications = response.data;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     },
   },
 };

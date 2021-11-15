@@ -7,22 +7,15 @@
         </div>
         <div class="page-content">
           <div class="grid grid-cols-2">
-            <div class="block-content">
-              <BlockTitle title="Education" />
+            <div
+              class="block-content"
+              v-for="group in experience"
+              :key="group.title"
+            >
+              <BlockTitle :title="group.title" />
               <div class="timeline">
                 <TimelineItem
-                  v-for="item in educationItems"
-                  :key="item.title"
-                  :timeline-item="item"
-                />
-              </div>
-            </div>
-            <div class="block-content">
-              <BlockTitle title="Experience" />
-
-              <div class="timeline">
-                <TimelineItem
-                  v-for="item in experienceItems"
+                  v-for="item in group.items"
                   :key="item.title"
                   :timeline-item="item"
                 />
@@ -47,17 +40,22 @@ export default {
   },
   data() {
     return {
-      educationItems: [],
-      experienceItems: [],
+      experience: [],
     };
   },
-  async mounted() {
-    this.educationItems = await this.loadItems("education");
-    this.experienceItems = await this.loadItems("experience");
+  mounted() {
+    this.experience = this.loadExperience();
   },
   methods: {
-    loadItems: async function (fileName) {
-      return (await axios.get(`/data/${fileName}.json`)).data;
+    loadExperience: async function () {
+      await axios
+        .get("/data/experience.json")
+        .then((response) => {
+          this.experience = response.data;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     },
   },
 };

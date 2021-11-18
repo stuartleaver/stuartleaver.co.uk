@@ -8,7 +8,7 @@ describe("BlogItem.vue", () => {
         item: {
           title: "title",
           image: "image",
-          date: "date",
+          date: "2020-04-27T19:09:07",
         },
       },
     });
@@ -21,7 +21,7 @@ describe("BlogItem.vue", () => {
         item: {
           title: "Lorem ipsum",
           image: "https://stuartleaver.dev/images/test.png",
-          date: "1st Oct 2021",
+          date: "2021-10-01T19:09:07",
         },
       },
     });

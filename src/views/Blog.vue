@@ -6,7 +6,9 @@
           <h2>Blog</h2>
         </div>
         <div class="page-content">
-          <div class="grid grid-cols-2"><BlogItem :item="item" /></div>
+          <div class="grid grid-cols-2">
+            <BlogItem v-for="item in items" :key="item.id" :item="item" />
+          </div>
         </div>
       </div>
     </section>
@@ -14,6 +16,7 @@
 </template>
 <script>
 import BlogItem from "@/components/BlogItem.vue";
+import axios from "axios";
 
 export default {
   name: "Blog",
@@ -22,12 +25,34 @@ export default {
   },
   data() {
     return {
-      item: {
-        title: "Test blog",
-        date: "1st Oct 2021",
-        image: "photo.png",
-      },
+      items: [],
     };
+  },
+  mounted() {
+    this.getBlogItems();
+  },
+  methods: {
+    getBlogItems: async function () {
+      await axios
+        //   https://stuartleaver.dev/wp-json/wp/v2/posts?_embed
+        .get("/data/blog.json")
+        .then((response) => {
+          response.data.forEach((item) => {
+            this.items.push({
+              id: item.id,
+              title: item.title.rendered,
+              date: item.date,
+              image:
+                item._embedded["wp:featuredmedia"][0].media_details.sizes.medium
+                  .source_url,
+              link: item.link,
+            });
+          });
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
   },
 };
 </script>

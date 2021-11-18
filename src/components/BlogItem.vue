@@ -2,20 +2,22 @@
   <div class="item-block">
     <div class="item-info">
       <img class="item-image" :src="item.image" />
-      <h4>{{ item.title }}</h4>
-      <p>{{ item.date }}</p>
+      <h4 v-html="item.title" />
+      <p>{{ formatDate }}</p>
     </div>
   </div>
 </template>
 <script>
+import moment from "moment";
 export default {
   name: "BlogItem",
   props: {
     item: Object,
   },
-  mounted() {
-    console.log(this.item);
-    console.log(this.item.title);
+  computed: {
+    formatDate() {
+      return moment(this.item.date).format("Do MMM YYYY");
+    },
   },
 };
 </script>
@@ -29,6 +31,6 @@ export default {
 }
 
 .item-image {
-  @apply h-32 w-32 m-auto mb-3;
+  @apply m-auto mb-3;
 }
 </style>

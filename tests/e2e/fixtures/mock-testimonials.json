@@ -1,0 +1,27 @@
+[
+    {
+        "text": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec eleifend vel turpis quis suscipit. Suspendisse risus urna, imperdiet at purus id, ultricies iaculis leo. Donec a tellus dictum, efficitur turpis non, pellentesque turpis. Sed libero ex, laoreet ut justo non, lacinia volutpat ex. Ut nec rutrum risus. Morbi at elit quis arcu vulputate eleifend. In tristique magna ligula, semper mollis leo gravida tincidunt.",
+        "author": "Stien Macarena",
+        "role": "CEO"
+    },
+    {
+        "text": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras tellus massa, accumsan sit amet tristique quis, sagittis ut nunc. In venenatis leo vitae diam fermentum, ut auctor purus auctor. Sed rhoncus, lacus eget mattis ultricies, massa dui laoreet arcu, eu luctus neque mauris et sem. Praesent felis mi, condimentum tincidunt facilisis sed, varius a sapien. Maecenas sed est eu ipsum tempus sollicitudin et eu libero. Etiam nisi elit, laoreet non nibh eget, scelerisque vestibulum sem. Nullam ipsum quam, efficitur vel lectus et, mattis mattis arcu. Nunc maximus venenatis felis tincidunt porttitor. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Maecenas et rutrum justo. Praesent volutpat ut risus fermentum euismod. Vestibulum scelerisque neque in mi tincidunt, quis feugiat diam molestie.",
+        "author": "Nevio Dyan",
+        "role": "Software Engineer"
+    },
+    {
+        "text": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus molestie sit amet leo vitae volutpat. Maecenas viverra sem in erat rutrum, in facilisis ex lobortis. Ut laoreet rhoncus dui, eget pretium lectus efficitur nec. Cras felis purus, luctus in orci ut, ornare rutrum turpis. Morbi aliquet pulvinar dolor, eget elementum mi blandit quis. Interdum et malesuada fames ac ante ipsum primis in faucibus. Maecenas quis posuere arcu, id consequat tortor. Nam faucibus ipsum nec massa pellentesque, sed semper quam rhoncus. Duis tristique nunc dui, ac finibus nisl accumsan nec. Cras sagittis sollicitudin ex, id vestibulum nunc porttitor et. Sed facilisis nec ipsum at fringilla. Integer pharetra at felis sit amet consectetur. Aenean a dui a nisi dictum placerat.",
+        "author": "Donatello Faustine",
+        "role": "Scrum Master"
+    },
+    {
+        "text": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. In pharetra tellus eget finibus dictum. Morbi cursus convallis dapibus. Sed sed condimentum enim, vitae fermentum nulla. Vivamus dapibus lorem ac libero condimentum, et euismod felis accumsan. Nam sit amet laoreet massa. Sed rutrum lorem at magna porttitor, non sodales risus blandit. Fusce gravida tincidunt metus sit amet bibendum. Nunc quis bibendum nunc. Donec in condimentum elit. Praesent id ex nec enim fermentum aliquam.",
+        "author": "Lecia Jemmy",
+        "role": "Software Engineer in Test"
+    },
+    {
+        "text": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras lobortis metus sed leo vehicula finibus. Donec auctor libero et quam porta, ut rutrum nisl iaculis. Vivamus lobortis porttitor mi, ac vehicula neque dictum id. Quisque varius blandit feugiat. Mauris id neque purus. Sed eget venenatis est. Aliquam erat volutpat. Morbi in tristique magna. Sed tempor metus bibendum, sollicitudin nulla nec, hendrerit eros. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut eleifend, urna eu aliquam posuere, tellus nisi scelerisque tortor, id auctor diam felis id nisl. Nullam condimentum tristique tincidunt. Cras turpis orci, finibus id ultrices nec, porta a metus. Mauris pharetra diam odio, a suscipit leo molestie tristique.",
+        "author": "Marisa Gloriana",
+        "role": "Product Owner"
+    }
+]

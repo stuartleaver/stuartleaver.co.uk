@@ -1,7 +1,7 @@
 <template>
   <div class="item-block">
     <div class="item-info">
-      <img class="item-image" :src="item.image" />
+      <img class="item-image" :src="item.image" :alt="item.imageAlt" />
       <h4 v-html="item.title" />
       <p>{{ formatDate }}</p>
     </div>

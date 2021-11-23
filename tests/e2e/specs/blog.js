@@ -17,6 +17,13 @@ describe("Blog.vue", () => {
         );
         cy.contains("p", "17th Jun 2020");
         cy.get("img")
+          .should("have.attr", "alt")
+          .then((alt) => {
+            expect(alt).to.eq(
+              "Creating a VS Code Extension Pack and Publishing through a GitHub Action"
+            );
+          });
+        cy.get("img")
           .should("have.attr", "src")
           .then((src) => {
             expect(src).to.eq(

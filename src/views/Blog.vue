@@ -45,6 +45,7 @@ export default {
               image:
                 item._embedded["wp:featuredmedia"][0].media_details.sizes.medium
                   .source_url,
+              imageAlt: item._embedded["wp:featuredmedia"][0].alt_text,
               link: item.link,
             });
           });

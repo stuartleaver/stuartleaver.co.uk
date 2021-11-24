@@ -1,12 +1,12 @@
 describe("Blog.vue", () => {
   it("displays the correct number of blog entries", () => {
-    cy.intercept("/data/*", { fixture: "mock-blog.json" });
+    cy.intercept("/api/getblogposts", { fixture: "mock-blog.json" });
     cy.visit("/blog");
     cy.get(".item-block").should("have.length", 3);
   });
 
   it("displays the testimonial section correctly", () => {
-    cy.intercept("/data/*", { fixture: "mock-blog.json" });
+    cy.intercept("/api/getblogposts", { fixture: "mock-blog.json" });
     cy.visit("/blog");
     cy.get(".item-block")
       .eq(1)

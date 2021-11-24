@@ -35,7 +35,7 @@ export default {
     getBlogItems: async function () {
       await axios
         //   https://stuartleaver.dev/wp-json/wp/v2/posts?_embed
-        .get("/data/blog.json")
+        .get("/api/getblogposts")
         .then((response) => {
           response.data.forEach((item) => {
             this.items.push({

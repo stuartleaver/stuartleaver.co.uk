@@ -6,6 +6,7 @@
           <h2>Blog</h2>
         </div>
         <div class="page-content">
+          <Loader v-if="loading" />
           <div class="grid grid-cols-2">
             <BlogItem v-for="item in items" :key="item.id" :item="item" />
           </div>
@@ -16,16 +17,19 @@
 </template>
 <script>
 import BlogItem from "@/components/BlogItem.vue";
+import Loader from "@/components/Loader.vue";
 import axios from "axios";
 
 export default {
   name: "Blog",
   components: {
     BlogItem,
+    Loader,
   },
   data() {
     return {
       items: [],
+      loading: false,
     };
   },
   mounted() {
@@ -33,8 +37,9 @@ export default {
   },
   methods: {
     getBlogItems: async function () {
+      this.loading = true;
+
       await axios
-        //   https://stuartleaver.dev/wp-json/wp/v2/posts?_embed
         .get("/api/getblogposts")
         .then((response) => {
           response.data.forEach((item) => {
@@ -49,9 +54,13 @@ export default {
               link: item.link,
             });
           });
+
+          this.loading = false;
         })
         .catch((error) => {
           console.log(error);
+
+          this.loading = false;
         });
     },
   },

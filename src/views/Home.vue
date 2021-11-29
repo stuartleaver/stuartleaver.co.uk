@@ -9,7 +9,7 @@
             </div>
             <div class="header">
               <h1>Stuart Leaver</h1>
-              <span class="roles">Software Engineering God</span>
+              <span class="roles">Software Engineer</span>
               <div class="social-media-links">
                 <a href="https://github.com/stuartleaver" target="_blank"
                   ><font-awesome-icon :icon="['fab', 'github']" size="lg"
@@ -46,9 +46,9 @@
               functional requirements.
             </p>
           </div>
-          <div class="download-cv">
+          <!-- <div class="download-cv">
             <a href="" class="cv-button">Download CV</a>
-          </div>
+          </div> -->
           <div class="testimonials">
             <BlockTitle title="Testimonials" />
             <div class="grid grid-cols-2">
@@ -150,12 +150,16 @@ export default {
   @apply pt-5 px-12 pb-12;
 }
 
+.about-me {
+  @apply mb-8;
+}
+
 .about-me p {
   @apply text-sm font-normal text-left;
 }
 
 .download-cv {
-  @apply mt-8 mb-8 text-left;
+  @apply mb-8 text-left;
 }
 
 .cv-button {

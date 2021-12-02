@@ -1,9 +1,11 @@
 <template>
   <div class="item-block">
     <div class="item-info">
-      <img class="item-image" :src="item.image" :alt="item.imageAlt" />
-      <h4 v-html="item.title" />
-      <p>{{ formatDate }}</p>
+      <a class="item-link" :href="item.link" target="_blank">
+        <img class="item-image" :src="item.image" :alt="item.imageAlt" />
+        <h4 v-html="item.title" />
+        <p class="image-date">{{ formatDate }}</p>
+      </a>
     </div>
   </div>
 </template>
@@ -32,5 +34,13 @@ export default {
 
 .item-image {
   @apply m-auto mb-3;
+}
+
+.item-link:hover {
+  @apply text-blue-500;
+}
+
+.image-date {
+  @apply text-xs text-gray-500 mt-2;
 }
 </style>

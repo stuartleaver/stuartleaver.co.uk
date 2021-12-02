@@ -1,0 +1,2681 @@
+[
+    {
+        "id": 442,
+        "date": "2021-02-18T16:10:38",
+        "date_gmt": "2021-02-18T16:10:38",
+        "guid": {
+            "rendered": "https://stuartleaver.dev/?p=442"
+        },
+        "modified": "2021-02-18T17:23:46",
+        "modified_gmt": "2021-02-18T17:23:46",
+        "slug": "apis-using-the-openapi-specification-and-autorest-along-with-azure-api-management",
+        "status": "publish",
+        "type": "post",
+        "link": "https://stuartleaver.dev/apis-using-the-openapi-specification-and-autorest-along-with-azure-api-management/",
+        "title": {
+            "rendered": "APIs using the OpenAPI Specification and AutoRest along with Azure API Management"
+        },
+        "content": {
+            "rendered": "\n<p>This blog post will look at how the OpenAPI Specification can be used with Azure API Management and AutoRest to create feature-rich APIs. Throughout this post, we will cover the following points:</p>\n\n\n\n<ul><li>What are APIs?</li><li>OpenAPI Specification</li><li>Azure API Management</li><li>AutoRest to auto generate code</li><li>How can we use the Open API Specification and Azure API Management to write the API implementations in using AutoRest and VS Code</li></ul>\n\n\n\n<h2>What are APIs</h2>\n\n\n\n<p>An application programming interface, or API, is an interface that can be used between multiple pieces of software to communicate. It defines what type of calls or requests can be made, how to use them, and the data types. Building an API aims to abstract the underlying implementation and expose what is needed by the developer.</p>\n\n\n\n<p>To look at a straightforward example, we can consider an application that displays data help in a database. Say an ordering system, for example. The application will need to insert orders into the database when customers place them. Customers will also want to view their orders, so retrieving data from the database would be required. The application could contain code to select and insert the data, but the developer would need to know about the structure of the tables and data. That tightly couples the application to the database though. What happens if other systems in the same company need the same data? They too would have to write their implementations.</p>\n\n\n\n<p>In the above example, an API would remove the developer&#8217;s need to know details about the database and make it re-usable across multiple systems.</p>\n\n\n\n<p>API&#8217;s can also be created for public consumption. Let&#8217;s say that you want to retrieve flight arrivals into a particular airport. That in itself seems like a complicated requirement. However, there is an open-source API provide by <a href=\"https://opensky-network.org\" target=\"_blank\" rel=\"noreferrer noopener\">OpenSky Network</a>. From the <a href=\"https://opensky-network.org/apidoc/rest.html#arrivals-by-airport\" target=\"_blank\" rel=\"noreferrer noopener\">documentation</a>, we can see an operation that will give what we are looking for and documentation on the parameters for the request and response, along with the data types.Using a popular tool such as <a href=\"https://www.postman.com\" target=\"_blank\" rel=\"noreferrer noopener\">Postman</a>, we can get arrivals into London Heathrow on the 16<sup>th</sup>January 2021, with no code written.</p>\n\n\n\n<figure class=\"wp-block-image size-large\"><img src=\"https://stuartleaver.dev/wp-content/uploads/2021/02/01-postman-example-api-call-1024x846.png\" alt=\"Postman example API call\" class=\"wp-image-448 lazyload\" data-srcset=\"https://stuartleaver.dev/wp-content/uploads/2021/02/01-postman-example-api-call-1024x846.png 1024w, https://stuartleaver.dev/wp-content/uploads/2021/02/01-postman-example-api-call-300x248.png 300w, https://stuartleaver.dev/wp-content/uploads/2021/02/01-postman-example-api-call-768x635.png 768w, https://stuartleaver.dev/wp-content/uploads/2021/02/01-postman-example-api-call-1536x1269.png 1536w, https://stuartleaver.dev/wp-content/uploads/2021/02/01-postman-example-api-call-2048x1692.png 2048w\" sizes=\"auto\" /><figcaption>Postman example API call</figcaption></figure>\n\n\n\n<p>With everyone writing API&#8217;s, though, how do you manage standards? If your organisation has a lot of, how are they maintained? These two questions can be answered by using the OpenAPI Specification and Azure API Management.</p>\n\n\n\n<h2>OpenAPI Specification</h2>\n\n\n\n<p>The first question is &#8220;What is the OpenAPI Specification?&#8221;. To answer this, we can take a look at the description on the Swagger site:</p>\n\n\n\n<blockquote class=\"wp-block-quote\"><p>The OpenAPI Specification (OAS) defines a standard, language-agnostic interface to RESTful APIs which allows both humans and computers to discover and understand the service&#8217;s capabilities without access to source code, documentation, or through network traffic inspection. When properly defined, a consumer can understand and interact with the remote service with minimal implementation logic.</p><p>An OpenAPI definition can then be used by documentation generation tools to display the API, code generation tools to generate servers and clients in various programming languages, testing tools, and many other use cases.</p><cite><a href=\"https://swagger.io/specification/\" target=\"_blank\" rel=\"noreferrer noopener\">https://swagger.io/specification/</a></cite></blockquote>\n\n\n\n<p>So we have a language-agnostic interface which can allow us to create re-usable and documented RESTful APIs for consumption.</p>\n\n\n\n<p>With API architecture accelerating in growth, more and more people and organisations are defining APIs. When it comes to streamlining this process, <a href=\"https://azure.microsoft.com/en-gb/services/api-management/\" target=\"_blank\" rel=\"noreferrer noopener\">Azure API Management</a> is a perfect tool within the enterprise.</p>\n\n\n\n<h2>API Management</h2>\n\n\n\n<p>API Management allows the management of API architecture in a single place. It can do many things, such as managing APIs across clouds. Help protect resources by applying call rates, for example, saving development work and standardising. What is interesting for this blog post, though, is the ability to define APIs and export the OpenAPI Specification. Rather than talk about it, let&#8217;s create an API definition.</p>\n\n\n\n<p>First of all, lets set up the resources required:</p>\n\n\n\n<pre class=\"wp-block-code\"><code lang=\"bash\" class=\"language-bash\">GROUPNAME=api-management-example\nLOCATION=&lt;LOCATION>\nSERVICENAME=BlogPosts\nPUBLISHEREMAIL=&lt;EMAIL ADDRESS>\nPUBLISHERNAME=&lt;COMPANY NAME>\n\naz group create --name ${GROUPNAME} --location ${LOCATION}\n\naz apim create --name ${SERVICENAME} --resource-group ${GROUPNAME} --location ${LOCATION} --sku-name Consumption --enable-client-certificate true --publisher-email ${PUBLISHEREMAIL} --publisher-name ${PUBLISHERNAME}</code></pre>\n\n\n\n<p>Once the API Management resource has been created, let&#8217;s create an API. To make this demo a bit easier, we will use an OpenAPI Specification made for this blog posts. It&#8217;s not complete, but it serves the purpose.</p>\n\n\n\n<p>Before you proceed, download the API specification from this site using the following link:</p>\n\n\n<section class='__wpdm_gb_section __wpdm_gb_package'><div class='w3eden'><!-- WPDM Link Template: Call to Action 3 -->\n\n<div class=\"well c2a3\">\n    <div class=\"media\">\n        <div class=\"mr-3\" align=\"left\">\n            <img class=\"wpdm_icon lazyload\" alt=\"Icon\" src=\"https://stuartleaver.dev/wp-content/plugins/download-manager/assets/file-type-icons/yaml.svg\" onError=\"this.src=\"https://stuartleaver.dev/wp-content/plugins/download-manager/assets/file-type-icons/unknown.svg\";\" />\n        </div>\n        <div class=\"media-body\">\n            <h3 class=\"media-heading\" style=\"padding-top: 0px;border:0px;margin: 0 0 5px 0;font-size:12pt;\">\n                <a style=\"font-weight: 700\" href=\"https://stuartleaver.dev/download/blog-posts-openapi-specification-yaml/\">Blog Posts OpenAPI Specification &#8211; YAML</a>\n                <span style=\"font-size:8pt;font-weight:300\" class=\"text-muted ml-4\">\n                    <i class=\"fa fa-hdd mr-1\"></i> 1.35 KB\n                    <i class=\"ml-3 fa fa-arrow-alt-circle-down mr-1\"></i> 6 downloads\n                </span>\n            </h3>\n            YAML file that is used in the &#8216;Serverless Azure Functions using API Management and&#8230;\n        </div>\n        <div class=\"ml-3\" align=\"right\">\n            <a class='wpdm-download-link download-on-click btn btn-primary ' rel='nofollow' href='#' data-downloadurl=\"https://stuartleaver.dev/download/blog-posts-openapi-specification-yaml/?wpdmdl=453&#038;refresh=6193fb41be9551637088065\">Download</a>\n        </div>\n    </div>\n\n</div>\n<style>\n    .well.c2a3 .btn {\n        padding: 11px 30px;\n        font-size: 11pt;\n    }\n\n    .well.c2a3 .media-body {\n        font-size: 11pt;\n    }\n\n    .well.c2a3 .wpdm_icon {\n        height: 42px;\n        width: auto;\n    }</style></div></section>\n\n\n<ul><li>Open your API Management resource</li><li>In the left navigation of your API Management instance, select &#8216;APIs&#8217;.</li><li>Select &#8216;Add API&#8217;</li><li>Select the OpenAPI tile.</li><li>Enter the values from the following table. Then select Create to create your API.</li></ul>\n\n\n\n<figure class=\"wp-block-table\"><table class=\"has-fixed-layout\"><thead><tr><th>Setting</th><th>Value</th></tr></thead><tbody><tr><td><strong>OpenAPI specification</strong></td><td>Select the location of the file downloaded above.</td></tr><tr><td><strong>Display name</strong></td><td>After you enter the preceding service URL, API Management fills out this field based on the JSON.</td></tr><tr><td><strong>Name</strong></td><td>After you enter the preceding service URL, API Management fills out this field based on the JSON.</td></tr><tr><td><strong>API URL suffix</strong></td><td>blog</td></tr></tbody></table><figcaption>Azure API Management &#8211; API creation settings</figcaption></figure>\n\n\n\n<p>If all goes well, you should see something like this:</p>\n\n\n\n<figure class=\"wp-block-image size-large\"><img src=\"https://stuartleaver.dev/wp-content/uploads/2021/02/02-blog-posts-api-1024x646.png\" alt=\"Azure API Management Blog Post API\" class=\"wp-image-449 lazyload\" data-srcset=\"https://stuartleaver.dev/wp-content/uploads/2021/02/02-blog-posts-api-1024x646.png 1024w, https://stuartleaver.dev/wp-content/uploads/2021/02/02-blog-posts-api-300x189.png 300w, https://stuartleaver.dev/wp-content/uploads/2021/02/02-blog-posts-api-768x485.png 768w, https://stuartleaver.dev/wp-content/uploads/2021/02/02-blog-posts-api-1536x969.png 1536w, https://stuartleaver.dev/wp-content/uploads/2021/02/02-blog-posts-api-2048x1292.png 2048w\" sizes=\"auto\" /><figcaption>Azure API Management Blog Post API</figcaption></figure>\n\n\n\n<p>Let&#8217;s assume for this post that the OpenAPI Specification just imported, was written by someone other than a developer. A developer may now have the implement the API, so how can the process be made easier? We can use AutoRest.</p>\n\n\n\n<h2>AutoRest</h2>\n\n\n\n<p><a href=\"http://(https://github.com/Azure/AutoRest\" data-type=\"URL\" data-id=\"-1\" target=\"_blank\" rel=\"noreferrer noopener\">AutoRest</a> is a tool that generates client libraries for accessing RESTful web services, but how can we use it to help us out.</p>\n\n\n\n<p>First of all, make sure you have AutoRest installed. This can be done using the following commands. You&#8217;ll see that the package is installed globally.</p>\n\n\n\n<pre class=\"wp-block-code\"><code lang=\"bash\" class=\"language-bash\">npm install -g autorest\nautorest –latest</code></pre>\n\n\n\n<p>In the folder where the YAML file is that you downloaded earlier, run the command below. You can use the following values for the language flag:</p>\n\n\n\n<figure class=\"wp-block-table\"><table class=\"has-fixed-layout\"><thead><tr><th>Language</th><th>Description</th></tr></thead><tbody><tr><td>–-python</td><td>Python</td></tr><tr><td>–-csharp</td><td>C# / .NET code</td></tr><tr><td>–-java</td><td>Java</td></tr><tr><td>–-typescript</td><td>Typescript</td></tr><tr><td>–-go</td><td>Golang</td></tr></tbody></table><figcaption>AutoRest &#8211; Languages</figcaption></figure>\n\n\n\n<pre class=\"wp-block-code\"><code lang=\"bash\" class=\"language-bash\">autorest --input-file=blog-posts.openapi.yaml --v3 –-csharp</code></pre>\n\n\n\n<p>There are other flags you can set, such as –output-folder and –namespace. You can find a full list <a href=\"https://github.com/Azure/autorest/blob/master/docs/generate/flags.md\" target=\"_blank\" rel=\"noreferrer noopener\">here</a> or a common list <a href=\"https://github.com/Azure/autorest/blob/master/docs/generate/readme.md#common-flags\" target=\"_blank\" rel=\"noreferrer noopener\">here</a>.</p>\n\n\n\n<p>Once the code generation has run, if you open the folder in VS Code, you can see the generated code, and for example, see the GetPosts method:</p>\n\n\n\n<pre class=\"wp-block-code\"><code lang=\"csharp\" class=\"language-csharp\">/// &lt;summary> Get blog post by ID. &lt;/summary>\n/// &lt;param name=\"id\"> Format - int32. &lt;/param>\n/// &lt;param name=\"cancellationToken\"> The cancellation token to use. &lt;/param>\npublic Response GetPost(int id, CancellationToken cancellationToken = default)\n{\n    using var message = CreateGetPostRequest(id);\n    _pipeline.Send(message, cancellationToken);\n    switch (message.Response.Status)\n    {\n        case 200:\n            return message.Response;\n        default:\n            throw _clientDiagnostics.CreateRequestFailedException(message.Response);\n    }\n}</code></pre>\n\n\n\n<p>From here, you can start adding the rest of your implementation and in this case, getting data around blog posts.</p>\n\n\n\n<h2>Summary</h2>\n\n\n\n<p>In this post, we have looked at the OpenAPI Specification, Azure API Management and AutoRest.</p>\n\n\n\n<p>The OpenAPI Specification is language-agnostic and can define the operations and data types used in APIs. As a result of API architecture becoming a popular way of writing systems, it has become necessary to manage them. So rather than having multiple teams writing their own API&#8217;s you could have a tool such as Azure API management to do the work for you.</p>\n\n\n\n<p>Azure API Management allows the creation of rich API&#8217;s that can be managed in one place. It can also take away the need for developers to implement logic such as call rate limits and usage quotas, for example. However, a developer may still be required to implement these APIs in code.</p>\n\n\n\n<p>This is where AutoRest comes in. The APIs defined in an API Management resource can be exported in the OpenAPI standard. AutoRest can then take this file and autogenerate the code the developer needs to get started.Hopefully, this post gives you a better understanding of how the OpenAPI Specification, along with Azure API Management and AutoRest can help generate APIs. If you would like more information, there are some useful links below.</p>\n\n\n\n<h2>Links</h2>\n\n\n\n<p>OpenAPI Specification (About) &#8211; <a href=\"https://swagger.io/specification/\" target=\"_blank\" rel=\"noreferrer noopener\">https://swagger.io/specification/</a></p>\n\n\n\n<p>OpenAPI Specification – <a href=\"http://spec.openapis.org/oas/v3.0.3\" target=\"_blank\" rel=\"noreferrer noopener\">http://spec.openapis.org/oas/v3.0.3</a></p>\n\n\n\n<p>Azure API Management – <a href=\"https://azure.microsoft.com/en-gb/services/api-management/\" target=\"_blank\" rel=\"noreferrer noopener\">https://azure.microsoft.com/en-gb/services/api-management/</a></p>\n\n\n\n<p>AutoRest &#8211; <a href=\"https://github.com/Azure/autorest\" target=\"_blank\" rel=\"noreferrer noopener\">https://github.com/Azure/autorest</a></p>\n",
+            "protected": false
+        },
+        "excerpt": {
+            "rendered": "<p>How an OpenAPI Specification definition exported from an Azure API Management resource can create auto generated code using AutoRest and VS Code.</p>\n",
+            "protected": false
+        },
+        "author": 1,
+        "featured_media": 463,
+        "comment_status": "open",
+        "ping_status": "open",
+        "sticky": false,
+        "template": "",
+        "format": "standard",
+        "meta": [],
+        "categories": [
+            52,
+            62,
+            60,
+            61,
+            22,
+            40,
+            63,
+            49
+        ],
+        "tags": [
+            64,
+            65,
+            68,
+            24,
+            37,
+            66,
+            67,
+            45
+        ],
+        "_links": {
+            "self": [
+                {
+                    "href": "https://stuartleaver.dev/wp-json/wp/v2/posts/442"
+                }
+            ],
+            "collection": [
+                {
+                    "href": "https://stuartleaver.dev/wp-json/wp/v2/posts"
+                }
+            ],
+            "about": [
+                {
+                    "href": "https://stuartleaver.dev/wp-json/wp/v2/types/post"
+                }
+            ],
+            "author": [
+                {
+                    "embeddable": true,
+                    "href": "https://stuartleaver.dev/wp-json/wp/v2/users/1"
+                }
+            ],
+            "replies": [
+                {
+                    "embeddable": true,
+                    "href": "https://stuartleaver.dev/wp-json/wp/v2/comments?post=442"
+                }
+            ],
+            "version-history": [
+                {
+                    "count": 11,
+                    "href": "https://stuartleaver.dev/wp-json/wp/v2/posts/442/revisions"
+                }
+            ],
+            "predecessor-version": [
+                {
+                    "id": 466,
+                    "href": "https://stuartleaver.dev/wp-json/wp/v2/posts/442/revisions/466"
+                }
+            ],
+            "wp:featuredmedia": [
+                {
+                    "embeddable": true,
+                    "href": "https://stuartleaver.dev/wp-json/wp/v2/media/463"
+                }
+            ],
+            "wp:attachment": [
+                {
+                    "href": "https://stuartleaver.dev/wp-json/wp/v2/media?parent=442"
+                }
+            ],
+            "wp:term": [
+                {
+                    "taxonomy": "category",
+                    "embeddable": true,
+                    "href": "https://stuartleaver.dev/wp-json/wp/v2/categories?post=442"
+                },
+                {
+                    "taxonomy": "post_tag",
+                    "embeddable": true,
+                    "href": "https://stuartleaver.dev/wp-json/wp/v2/tags?post=442"
+                }
+            ],
+            "curies": [
+                {
+                    "name": "wp",
+                    "href": "https://api.w.org/{rel}",
+                    "templated": true
+                }
+            ]
+        },
+        "_embedded": {
+            "author": [
+                {
+                    "id": 1,
+                    "name": "Stuart Leaver",
+                    "url": "https://stuartleaver.dev",
+                    "description": "I'm a C# developer with a passion for .NET Core, Azure and DevOps. If I'm not at a computer writing code, you'll probably find me either running, trying to play Chess or in front of Netflix.",
+                    "link": "https://stuartleaver.dev/author/stuartleaver/",
+                    "slug": "stuartleaver",
+                    "avatar_urls": {
+                        "24": "https://secure.gravatar.com/avatar/a12e97af54c0b2c7894f6f0b6eea0efb?s=24&d=mm&r=g",
+                        "48": "https://secure.gravatar.com/avatar/a12e97af54c0b2c7894f6f0b6eea0efb?s=48&d=mm&r=g",
+                        "96": "https://secure.gravatar.com/avatar/a12e97af54c0b2c7894f6f0b6eea0efb?s=96&d=mm&r=g"
+                    },
+                    "_links": {
+                        "self": [
+                            {
+                                "href": "https://stuartleaver.dev/wp-json/wp/v2/users/1"
+                            }
+                        ],
+                        "collection": [
+                            {
+                                "href": "https://stuartleaver.dev/wp-json/wp/v2/users"
+                            }
+                        ]
+                    }
+                }
+            ],
+            "wp:featuredmedia": [
+                {
+                    "id": 463,
+                    "date": "2021-02-17T18:44:52",
+                    "slug": "openapi-specification-azure-api-management-autorest",
+                    "type": "attachment",
+                    "link": "https://stuartleaver.dev/openapi-specification-azure-api-management-autorest/",
+                    "title": {
+                        "rendered": "Serverless Azure Functions using API Management and OpenAPI"
+                    },
+                    "author": 1,
+                    "caption": {
+                        "rendered": "<p>Serverless Azure Functions using API Management and OpenAPI</p>\n"
+                    },
+                    "alt_text": "Serverless Azure Functions using API Management and OpenAPI",
+                    "media_type": "image",
+                    "mime_type": "image/png",
+                    "media_details": {
+                        "width": 2400,
+                        "height": 1600,
+                        "file": "2021/02/openapi-specification-azure-api-management-autorest.png",
+                        "sizes": {
+                            "medium": {
+                                "file": "openapi-specification-azure-api-management-autorest-300x200.png",
+                                "width": 300,
+                                "height": 200,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2021/02/openapi-specification-azure-api-management-autorest-300x200.png"
+                            },
+                            "large": {
+                                "file": "openapi-specification-azure-api-management-autorest-1024x683.png",
+                                "width": 1024,
+                                "height": 683,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2021/02/openapi-specification-azure-api-management-autorest-1024x683.png"
+                            },
+                            "thumbnail": {
+                                "file": "openapi-specification-azure-api-management-autorest-150x150.png",
+                                "width": 150,
+                                "height": 150,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2021/02/openapi-specification-azure-api-management-autorest-150x150.png"
+                            },
+                            "medium_large": {
+                                "file": "openapi-specification-azure-api-management-autorest-768x512.png",
+                                "width": 768,
+                                "height": 512,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2021/02/openapi-specification-azure-api-management-autorest-768x512.png"
+                            },
+                            "1536x1536": {
+                                "file": "openapi-specification-azure-api-management-autorest-1536x1024.png",
+                                "width": 1536,
+                                "height": 1024,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2021/02/openapi-specification-azure-api-management-autorest-1536x1024.png"
+                            },
+                            "2048x2048": {
+                                "file": "openapi-specification-azure-api-management-autorest-2048x1365.png",
+                                "width": 2048,
+                                "height": 1365,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2021/02/openapi-specification-azure-api-management-autorest-2048x1365.png"
+                            },
+                            "post-thumbnail": {
+                                "file": "openapi-specification-azure-api-management-autorest-640x360.png",
+                                "width": 640,
+                                "height": 360,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2021/02/openapi-specification-azure-api-management-autorest-640x360.png"
+                            },
+                            "stein-xs": {
+                                "file": "openapi-specification-azure-api-management-autorest-320x180.png",
+                                "width": 320,
+                                "height": 180,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2021/02/openapi-specification-azure-api-management-autorest-320x180.png"
+                            },
+                            "stein-sm": {
+                                "file": "openapi-specification-azure-api-management-autorest-480x270.png",
+                                "width": 480,
+                                "height": 270,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2021/02/openapi-specification-azure-api-management-autorest-480x270.png"
+                            },
+                            "stein-md": {
+                                "file": "openapi-specification-azure-api-management-autorest-640x360.png",
+                                "width": 640,
+                                "height": 360,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2021/02/openapi-specification-azure-api-management-autorest-640x360.png"
+                            },
+                            "stein-lg": {
+                                "file": "openapi-specification-azure-api-management-autorest-960x540.png",
+                                "width": 960,
+                                "height": 540,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2021/02/openapi-specification-azure-api-management-autorest-960x540.png"
+                            },
+                            "stein-xl": {
+                                "file": "openapi-specification-azure-api-management-autorest-1280x720.png",
+                                "width": 1280,
+                                "height": 720,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2021/02/openapi-specification-azure-api-management-autorest-1280x720.png"
+                            },
+                            "stein-2xl": {
+                                "file": "openapi-specification-azure-api-management-autorest-1600x900.png",
+                                "width": 1600,
+                                "height": 900,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2021/02/openapi-specification-azure-api-management-autorest-1600x900.png"
+                            },
+                            "stein-3xl": {
+                                "file": "openapi-specification-azure-api-management-autorest-1920x1080.png",
+                                "width": 1920,
+                                "height": 1080,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2021/02/openapi-specification-azure-api-management-autorest-1920x1080.png"
+                            },
+                            "stein-square-xs": {
+                                "file": "openapi-specification-azure-api-management-autorest-80x80.png",
+                                "width": 80,
+                                "height": 80,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2021/02/openapi-specification-azure-api-management-autorest-80x80.png"
+                            },
+                            "stein-square-sm": {
+                                "file": "openapi-specification-azure-api-management-autorest-160x160.png",
+                                "width": 160,
+                                "height": 160,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2021/02/openapi-specification-azure-api-management-autorest-160x160.png"
+                            },
+                            "stein-square-md": {
+                                "file": "openapi-specification-azure-api-management-autorest-240x240.png",
+                                "width": 240,
+                                "height": 240,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2021/02/openapi-specification-azure-api-management-autorest-240x240.png"
+                            },
+                            "stein-square-lg": {
+                                "file": "openapi-specification-azure-api-management-autorest-320x320.png",
+                                "width": 320,
+                                "height": 320,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2021/02/openapi-specification-azure-api-management-autorest-320x320.png"
+                            },
+                            "stein-square-xl": {
+                                "file": "openapi-specification-azure-api-management-autorest-480x480.png",
+                                "width": 480,
+                                "height": 480,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2021/02/openapi-specification-azure-api-management-autorest-480x480.png"
+                            },
+                            "stein-square-2xl": {
+                                "file": "openapi-specification-azure-api-management-autorest-640x640.png",
+                                "width": 640,
+                                "height": 640,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2021/02/openapi-specification-azure-api-management-autorest-640x640.png"
+                            },
+                            "stein-square-3xl": {
+                                "file": "openapi-specification-azure-api-management-autorest-720x720.png",
+                                "width": 720,
+                                "height": 720,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2021/02/openapi-specification-azure-api-management-autorest-720x720.png"
+                            },
+                            "full": {
+                                "file": "openapi-specification-azure-api-management-autorest.png",
+                                "width": 2400,
+                                "height": 1600,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2021/02/openapi-specification-azure-api-management-autorest.png"
+                            }
+                        },
+                        "image_meta": {
+                            "aperture": "0",
+                            "credit": "",
+                            "camera": "",
+                            "caption": "",
+                            "created_timestamp": "0",
+                            "copyright": "",
+                            "focal_length": "0",
+                            "iso": "0",
+                            "shutter_speed": "0",
+                            "title": "",
+                            "orientation": "0",
+                            "keywords": []
+                        }
+                    },
+                    "source_url": "https://stuartleaver.dev/wp-content/uploads/2021/02/openapi-specification-azure-api-management-autorest.png",
+                    "_links": {
+                        "self": [
+                            {
+                                "href": "https://stuartleaver.dev/wp-json/wp/v2/media/463"
+                            }
+                        ],
+                        "collection": [
+                            {
+                                "href": "https://stuartleaver.dev/wp-json/wp/v2/media"
+                            }
+                        ],
+                        "about": [
+                            {
+                                "href": "https://stuartleaver.dev/wp-json/wp/v2/types/attachment"
+                            }
+                        ],
+                        "author": [
+                            {
+                                "embeddable": true,
+                                "href": "https://stuartleaver.dev/wp-json/wp/v2/users/1"
+                            }
+                        ],
+                        "replies": [
+                            {
+                                "embeddable": true,
+                                "href": "https://stuartleaver.dev/wp-json/wp/v2/comments?post=463"
+                            }
+                        ]
+                    }
+                }
+            ],
+            "wp:term": [
+                [
+                    {
+                        "id": 52,
+                        "link": "https://stuartleaver.dev/category/net/",
+                        "name": ".NET",
+                        "slug": "net",
+                        "taxonomy": "category",
+                        "_links": {
+                            "self": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/categories/52"
+                                }
+                            ],
+                            "collection": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/categories"
+                                }
+                            ],
+                            "about": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/taxonomies/category"
+                                }
+                            ],
+                            "wp:post_type": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/posts?categories=52"
+                                }
+                            ],
+                            "curies": [
+                                {
+                                    "name": "wp",
+                                    "href": "https://api.w.org/{rel}",
+                                    "templated": true
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "id": 62,
+                        "link": "https://stuartleaver.dev/category/general/api/",
+                        "name": "API",
+                        "slug": "api",
+                        "taxonomy": "category",
+                        "_links": {
+                            "self": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/categories/62"
+                                }
+                            ],
+                            "collection": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/categories"
+                                }
+                            ],
+                            "about": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/taxonomies/category"
+                                }
+                            ],
+                            "up": [
+                                {
+                                    "embeddable": true,
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/categories/21"
+                                }
+                            ],
+                            "wp:post_type": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/posts?categories=62"
+                                }
+                            ],
+                            "curies": [
+                                {
+                                    "name": "wp",
+                                    "href": "https://api.w.org/{rel}",
+                                    "templated": true
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "id": 60,
+                        "link": "https://stuartleaver.dev/category/azure/api-management/",
+                        "name": "API Management",
+                        "slug": "api-management",
+                        "taxonomy": "category",
+                        "_links": {
+                            "self": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/categories/60"
+                                }
+                            ],
+                            "collection": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/categories"
+                                }
+                            ],
+                            "about": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/taxonomies/category"
+                                }
+                            ],
+                            "up": [
+                                {
+                                    "embeddable": true,
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/categories/22"
+                                }
+                            ],
+                            "wp:post_type": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/posts?categories=60"
+                                }
+                            ],
+                            "curies": [
+                                {
+                                    "name": "wp",
+                                    "href": "https://api.w.org/{rel}",
+                                    "templated": true
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "id": 61,
+                        "link": "https://stuartleaver.dev/category/general/autorest/",
+                        "name": "AutoRest",
+                        "slug": "autorest",
+                        "taxonomy": "category",
+                        "_links": {
+                            "self": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/categories/61"
+                                }
+                            ],
+                            "collection": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/categories"
+                                }
+                            ],
+                            "about": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/taxonomies/category"
+                                }
+                            ],
+                            "up": [
+                                {
+                                    "embeddable": true,
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/categories/21"
+                                }
+                            ],
+                            "wp:post_type": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/posts?categories=61"
+                                }
+                            ],
+                            "curies": [
+                                {
+                                    "name": "wp",
+                                    "href": "https://api.w.org/{rel}",
+                                    "templated": true
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "id": 22,
+                        "link": "https://stuartleaver.dev/category/azure/",
+                        "name": "Azure",
+                        "slug": "azure",
+                        "taxonomy": "category",
+                        "_links": {
+                            "self": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/categories/22"
+                                }
+                            ],
+                            "collection": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/categories"
+                                }
+                            ],
+                            "about": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/taxonomies/category"
+                                }
+                            ],
+                            "wp:post_type": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/posts?categories=22"
+                                }
+                            ],
+                            "curies": [
+                                {
+                                    "name": "wp",
+                                    "href": "https://api.w.org/{rel}",
+                                    "templated": true
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "id": 40,
+                        "link": "https://stuartleaver.dev/category/azure/azure-serverless/azure-functions/",
+                        "name": "Azure Functions",
+                        "slug": "azure-functions",
+                        "taxonomy": "category",
+                        "_links": {
+                            "self": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/categories/40"
+                                }
+                            ],
+                            "collection": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/categories"
+                                }
+                            ],
+                            "about": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/taxonomies/category"
+                                }
+                            ],
+                            "up": [
+                                {
+                                    "embeddable": true,
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/categories/23"
+                                }
+                            ],
+                            "wp:post_type": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/posts?categories=40"
+                                }
+                            ],
+                            "curies": [
+                                {
+                                    "name": "wp",
+                                    "href": "https://api.w.org/{rel}",
+                                    "templated": true
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "id": 63,
+                        "link": "https://stuartleaver.dev/category/net/c/",
+                        "name": "C#",
+                        "slug": "c",
+                        "taxonomy": "category",
+                        "_links": {
+                            "self": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/categories/63"
+                                }
+                            ],
+                            "collection": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/categories"
+                                }
+                            ],
+                            "about": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/taxonomies/category"
+                                }
+                            ],
+                            "up": [
+                                {
+                                    "embeddable": true,
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/categories/52"
+                                }
+                            ],
+                            "wp:post_type": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/posts?categories=63"
+                                }
+                            ],
+                            "curies": [
+                                {
+                                    "name": "wp",
+                                    "href": "https://api.w.org/{rel}",
+                                    "templated": true
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "id": 49,
+                        "link": "https://stuartleaver.dev/category/vs-code/",
+                        "name": "VS Code",
+                        "slug": "vs-code",
+                        "taxonomy": "category",
+                        "_links": {
+                            "self": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/categories/49"
+                                }
+                            ],
+                            "collection": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/categories"
+                                }
+                            ],
+                            "about": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/taxonomies/category"
+                                }
+                            ],
+                            "wp:post_type": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/posts?categories=49"
+                                }
+                            ],
+                            "curies": [
+                                {
+                                    "name": "wp",
+                                    "href": "https://api.w.org/{rel}",
+                                    "templated": true
+                                }
+                            ]
+                        }
+                    }
+                ],
+                [
+                    {
+                        "id": 64,
+                        "link": "https://stuartleaver.dev/tag/api/",
+                        "name": "api",
+                        "slug": "api",
+                        "taxonomy": "post_tag",
+                        "_links": {
+                            "self": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/tags/64"
+                                }
+                            ],
+                            "collection": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/tags"
+                                }
+                            ],
+                            "about": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/taxonomies/post_tag"
+                                }
+                            ],
+                            "wp:post_type": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/posts?tags=64"
+                                }
+                            ],
+                            "curies": [
+                                {
+                                    "name": "wp",
+                                    "href": "https://api.w.org/{rel}",
+                                    "templated": true
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "id": 65,
+                        "link": "https://stuartleaver.dev/tag/api-management/",
+                        "name": "api-management",
+                        "slug": "api-management",
+                        "taxonomy": "post_tag",
+                        "_links": {
+                            "self": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/tags/65"
+                                }
+                            ],
+                            "collection": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/tags"
+                                }
+                            ],
+                            "about": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/taxonomies/post_tag"
+                                }
+                            ],
+                            "wp:post_type": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/posts?tags=65"
+                                }
+                            ],
+                            "curies": [
+                                {
+                                    "name": "wp",
+                                    "href": "https://api.w.org/{rel}",
+                                    "templated": true
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "id": 68,
+                        "link": "https://stuartleaver.dev/tag/autorest/",
+                        "name": "autorest",
+                        "slug": "autorest",
+                        "taxonomy": "post_tag",
+                        "_links": {
+                            "self": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/tags/68"
+                                }
+                            ],
+                            "collection": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/tags"
+                                }
+                            ],
+                            "about": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/taxonomies/post_tag"
+                                }
+                            ],
+                            "wp:post_type": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/posts?tags=68"
+                                }
+                            ],
+                            "curies": [
+                                {
+                                    "name": "wp",
+                                    "href": "https://api.w.org/{rel}",
+                                    "templated": true
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "id": 24,
+                        "link": "https://stuartleaver.dev/tag/azure/",
+                        "name": "azure",
+                        "slug": "azure",
+                        "taxonomy": "post_tag",
+                        "_links": {
+                            "self": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/tags/24"
+                                }
+                            ],
+                            "collection": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/tags"
+                                }
+                            ],
+                            "about": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/taxonomies/post_tag"
+                                }
+                            ],
+                            "wp:post_type": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/posts?tags=24"
+                                }
+                            ],
+                            "curies": [
+                                {
+                                    "name": "wp",
+                                    "href": "https://api.w.org/{rel}",
+                                    "templated": true
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "id": 37,
+                        "link": "https://stuartleaver.dev/tag/azure-functions/",
+                        "name": "azure-functions",
+                        "slug": "azure-functions",
+                        "taxonomy": "post_tag",
+                        "_links": {
+                            "self": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/tags/37"
+                                }
+                            ],
+                            "collection": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/tags"
+                                }
+                            ],
+                            "about": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/taxonomies/post_tag"
+                                }
+                            ],
+                            "wp:post_type": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/posts?tags=37"
+                                }
+                            ],
+                            "curies": [
+                                {
+                                    "name": "wp",
+                                    "href": "https://api.w.org/{rel}",
+                                    "templated": true
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "id": 66,
+                        "link": "https://stuartleaver.dev/tag/openapi/",
+                        "name": "openapi",
+                        "slug": "openapi",
+                        "taxonomy": "post_tag",
+                        "_links": {
+                            "self": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/tags/66"
+                                }
+                            ],
+                            "collection": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/tags"
+                                }
+                            ],
+                            "about": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/taxonomies/post_tag"
+                                }
+                            ],
+                            "wp:post_type": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/posts?tags=66"
+                                }
+                            ],
+                            "curies": [
+                                {
+                                    "name": "wp",
+                                    "href": "https://api.w.org/{rel}",
+                                    "templated": true
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "id": 67,
+                        "link": "https://stuartleaver.dev/tag/specification/",
+                        "name": "specification",
+                        "slug": "specification",
+                        "taxonomy": "post_tag",
+                        "_links": {
+                            "self": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/tags/67"
+                                }
+                            ],
+                            "collection": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/tags"
+                                }
+                            ],
+                            "about": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/taxonomies/post_tag"
+                                }
+                            ],
+                            "wp:post_type": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/posts?tags=67"
+                                }
+                            ],
+                            "curies": [
+                                {
+                                    "name": "wp",
+                                    "href": "https://api.w.org/{rel}",
+                                    "templated": true
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "id": 45,
+                        "link": "https://stuartleaver.dev/tag/vs-code/",
+                        "name": "vs code",
+                        "slug": "vs-code",
+                        "taxonomy": "post_tag",
+                        "_links": {
+                            "self": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/tags/45"
+                                }
+                            ],
+                            "collection": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/tags"
+                                }
+                            ],
+                            "about": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/taxonomies/post_tag"
+                                }
+                            ],
+                            "wp:post_type": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/posts?tags=45"
+                                }
+                            ],
+                            "curies": [
+                                {
+                                    "name": "wp",
+                                    "href": "https://api.w.org/{rel}",
+                                    "templated": true
+                                }
+                            ]
+                        }
+                    }
+                ]
+            ]
+        }
+    },
+    {
+        "id": 422,
+        "date": "2020-06-17T18:39:37",
+        "date_gmt": "2020-06-17T17:39:37",
+        "guid": {
+            "rendered": "https://stuartleaver.dev/?p=422"
+        },
+        "modified": "2020-06-17T18:39:38",
+        "modified_gmt": "2020-06-17T17:39:38",
+        "slug": "creating-a-vs-code-extension-pack-and-publishing-through-a-github-action",
+        "status": "publish",
+        "type": "post",
+        "link": "https://stuartleaver.dev/creating-a-vs-code-extension-pack-and-publishing-through-a-github-action/",
+        "title": {
+            "rendered": "Creating a VS Code Extension Pack and Publishing through a GitHub Action"
+        },
+        "content": {
+            "rendered": "\n<div class=\"wp-block-group\"><div class=\"wp-block-group__inner-container\">\n<p>One of the features of <a href=\"https://code.visualstudio.com\" target=\"_blank\" rel=\"noreferrer noopener\">VS Code</a> is the ability to install extensions built with the <a rel=\"noreferrer noopener\" href=\"https://code.visualstudio.com/api\" target=\"_blank\">extension API</a> to extend the default functionality. Over time, you may install may extensions to help you with development, but what happens if you get a new machine and have to do a clean install of VS Code? Is there an easier way than installing each extension one by one?</p>\n\n\n\n<p>I found myself in that very position. Well, I did a clean install of a new macOS version. While searching for all of the extensions I needed, I started to document which ones I was adding. It was at this time that I discovered extension packs.</p>\n\n\n\n<p>What is an extension pack? An extension pack is a set of extensions bundled together that will all install at the same time. It is an easy way of sharing favourite extensions or a set of extensions for a particular development language. For example, say you develop in C# and deploy to Azure App Services and Azure Function Apps. You could create an extension pack that contains the C#, Azure App Service and Azure Functions extensions.</p>\n</div></div>\n\n\n\n<h2>Installing the Tools Needed</h2>\n\n\n\n<p>To get started creating Extension Packs, you will need to install the <a href=\"https://yeoman.io\" target=\"_blank\" rel=\"noreferrer noopener\">Yeoman</a> scaffolding CLI tools along with the code generator for VS Code. Installing those NPM packages can be done with the following command:</p>\n\n\n\n<pre class=\"wp-block-code\"><code lang=\"bash\" class=\"language-bash\">$ npm install -g yo generator-code</code></pre>\n\n\n\n<h2>Creating an Extension Pack</h2>\n\n\n\n<p>With the tools installed in the previous section, you can run the following command to get started:</p>\n\n\n\n<pre class=\"wp-block-code\"><code lang=\"bash\" class=\"language-bash\">$ yo code</code></pre>\n\n\n\n<p>You will then be able to select &#8216;New Extension Pack&#8217; from the prompt. Then after filling in some more information needed to create the scaffolding, an empty Extension Pack project will be created.</p>\n\n\n\n<figure class=\"wp-block-image size-large\"><img src=\"https://stuartleaver.dev/wp-content/uploads/2020/06/yo-code-extension-type-select-prompt-1024x704.png\" alt=\"Yo Code - VS Code Extension Type Select Prompt\" class=\"wp-image-429 lazyload\" data-srcset=\"https://stuartleaver.dev/wp-content/uploads/2020/06/yo-code-extension-type-select-prompt-1024x704.png 1024w, https://stuartleaver.dev/wp-content/uploads/2020/06/yo-code-extension-type-select-prompt-300x206.png 300w, https://stuartleaver.dev/wp-content/uploads/2020/06/yo-code-extension-type-select-prompt-768x528.png 768w, https://stuartleaver.dev/wp-content/uploads/2020/06/yo-code-extension-type-select-prompt-1536x1056.png 1536w, https://stuartleaver.dev/wp-content/uploads/2020/06/yo-code-extension-type-select-prompt.png 1714w\" sizes=\"auto\" /><figcaption>Yo Code &#8211; VS Code Extension Type Select Prompt</figcaption></figure>\n\n\n\n<figure class=\"wp-block-image size-large\"><img src=\"https://stuartleaver.dev/wp-content/uploads/2020/06/yo-code-extension-pack-details-1024x838.png\" alt=\"Yo Code - VS Code Extension Pack Creation Details\" class=\"wp-image-428 lazyload\" data-srcset=\"https://stuartleaver.dev/wp-content/uploads/2020/06/yo-code-extension-pack-details-1024x838.png 1024w, https://stuartleaver.dev/wp-content/uploads/2020/06/yo-code-extension-pack-details-300x245.png 300w, https://stuartleaver.dev/wp-content/uploads/2020/06/yo-code-extension-pack-details-768x628.png 768w, https://stuartleaver.dev/wp-content/uploads/2020/06/yo-code-extension-pack-details-1536x1256.png 1536w, https://stuartleaver.dev/wp-content/uploads/2020/06/yo-code-extension-pack-details.png 1714w\" sizes=\"auto\" /><figcaption>Yo Code &#8211; VS Code Extension Pack Creation Details</figcaption></figure>\n\n\n\n<p>Once you open the project, the file to look at is <code><em>package.json</em></code>. Within there, the critical property is <em><code>extensionPack</code></em>.</p>\n\n\n\n<figure class=\"wp-block-image size-large\"><img src=\"https://stuartleaver.dev/wp-content/uploads/2020/06/vscode-empty-extension-pack-1024x556.png\" alt=\"VS Code - New Extension Pack Empty Scaffolding\" class=\"wp-image-424 lazyload\" data-srcset=\"https://stuartleaver.dev/wp-content/uploads/2020/06/vscode-empty-extension-pack-1024x556.png 1024w, https://stuartleaver.dev/wp-content/uploads/2020/06/vscode-empty-extension-pack-300x163.png 300w, https://stuartleaver.dev/wp-content/uploads/2020/06/vscode-empty-extension-pack-768x417.png 768w, https://stuartleaver.dev/wp-content/uploads/2020/06/vscode-empty-extension-pack-1536x834.png 1536w, https://stuartleaver.dev/wp-content/uploads/2020/06/vscode-empty-extension-pack.png 2012w\" sizes=\"auto\" /><figcaption>VS Code &#8211; New Extension Pack Empty Scaffolding</figcaption></figure>\n\n\n\n<p>It is now time to start adding the extensions that you use, or thing will be helpful for others. As you will see, the format if adding an extension is <code>publisher.extensionName</code>. You can use the <a href=\"https://marketplace.visualstudio.com/vscode\" target=\"_blank\" rel=\"noreferrer noopener\">VS Code Marketplace</a> to find the unique identifiers for the extensions you wish to add.</p>\n\n\n\n<figure class=\"wp-block-image size-large\"><img src=\"https://stuartleaver.dev/wp-content/uploads/2020/06/vscode-marketplace-find-identifier-1024x960.png\" alt=\"VS Code Marketplace - Find Unique Identifier Locations\" class=\"wp-image-426 lazyload\" data-srcset=\"https://stuartleaver.dev/wp-content/uploads/2020/06/vscode-marketplace-find-identifier-1024x960.png 1024w, https://stuartleaver.dev/wp-content/uploads/2020/06/vscode-marketplace-find-identifier-300x281.png 300w, https://stuartleaver.dev/wp-content/uploads/2020/06/vscode-marketplace-find-identifier-768x720.png 768w, https://stuartleaver.dev/wp-content/uploads/2020/06/vscode-marketplace-find-identifier-1536x1440.png 1536w, https://stuartleaver.dev/wp-content/uploads/2020/06/vscode-marketplace-find-identifier-2048x1919.png 2048w\" sizes=\"auto\" /><figcaption>VS Code Marketplace &#8211; Find Unique Identifier Locations</figcaption></figure>\n\n\n\n<figure class=\"wp-block-image size-large\"><img src=\"https://stuartleaver.dev/wp-content/uploads/2020/06/vscode-extension-pack-with-initial-extension-1024x545.png\" alt=\"VS Code - New Extension Pack with an Extension Added\" class=\"wp-image-425 lazyload\" data-srcset=\"https://stuartleaver.dev/wp-content/uploads/2020/06/vscode-extension-pack-with-initial-extension-1024x545.png 1024w, https://stuartleaver.dev/wp-content/uploads/2020/06/vscode-extension-pack-with-initial-extension-300x160.png 300w, https://stuartleaver.dev/wp-content/uploads/2020/06/vscode-extension-pack-with-initial-extension-768x409.png 768w, https://stuartleaver.dev/wp-content/uploads/2020/06/vscode-extension-pack-with-initial-extension-1536x818.png 1536w, https://stuartleaver.dev/wp-content/uploads/2020/06/vscode-extension-pack-with-initial-extension-2048x1091.png 2048w\" sizes=\"auto\" /><figcaption>VS Code &#8211; New Extension Pack with an Extension Added</figcaption></figure>\n\n\n\n<h2>Building the Extension Pack</h2>\n\n\n\n<div class=\"wp-block-group\"><div class=\"wp-block-group__inner-container\">\n<p>Before publishing your newly created Extension Pack to the Marketplace, you will need to create a VSIX package. This VSIX package will also allow you to share your Extension Pack with others outside of the Marketplace.</p>\n\n\n\n<p>To create the VSIX package, you will need to install an NPM package named <code>vsce</code>. Having made sure you have Node.js installed, you can run the following command:</p>\n</div></div>\n\n\n\n<pre class=\"wp-block-code\"><code lang=\"bash\" class=\"language-bash\">$ npm install -g vsce</code></pre>\n\n\n\n<p>With the <em><code>vsce</code></em> package installed, you can package your Extension Pack with this command:</p>\n\n\n\n<pre class=\"wp-block-code\"><code lang=\"bash\" class=\"language-bash\">$ vsce package</code></pre>\n\n\n\n<h2>Publishing the Extension Pack</h2>\n\n\n\n<p>You could publish your Extension Pack manually, but why do that when you could use GitHub Actions. How you set up your pipeline is down to personal preference based on your branching strategy, and so the following will concentrate on the actual publishing.</p>\n\n\n\n<p>The first thing you will need to do is to get a Personal Access Token (PAT). So you will need to ensure that you have an <a href=\"https://azure.microsoft.com/en-gb/services/devops/\" target=\"_blank\" rel=\"noreferrer noopener\">Azure DevOps</a> Organisation as Azure DevOps is how extensions are published. Instructions on this can are in the <a rel=\"noreferrer noopener\" href=\"https://code.visualstudio.com/api/working-with-extensions/publishing-extension#get-a-personal-access-token\" target=\"_blank\">documentation</a>. Once you have this, you will need to add it as a secret in your GitHub repositories settings:</p>\n\n\n\n<figure class=\"wp-block-image size-large\"><img src=\"https://stuartleaver.dev/wp-content/uploads/2020/06/github-repo-secrets-1024x321.png\" alt=\"GitHub Secrets - VS Code Marketplace PAT Token\" class=\"wp-image-423 lazyload\" data-srcset=\"https://stuartleaver.dev/wp-content/uploads/2020/06/github-repo-secrets-1024x321.png 1024w, https://stuartleaver.dev/wp-content/uploads/2020/06/github-repo-secrets-300x94.png 300w, https://stuartleaver.dev/wp-content/uploads/2020/06/github-repo-secrets-768x241.png 768w, https://stuartleaver.dev/wp-content/uploads/2020/06/github-repo-secrets.png 1488w\" sizes=\"auto\" /><figcaption>GitHub Secrets &#8211; VS Code Marketplace PAT Token</figcaption></figure>\n\n\n\n<p>More extensive details on publishing extensions are in the <a href=\"https://code.visualstudio.com/api/working-with-extensions/publishing-extension\" target=\"_blank\" rel=\"noreferrer noopener\">documentation</a>. The commands that apply the most here though when deploying through a GitHub Action are:</p>\n\n\n\n<pre class=\"wp-block-code\"><code lang=\"bash\" class=\"language-bash\">$ vsce package\n$ vsce publish -p &lt;PAT></code></pre>\n\n\n\n<p>The -p is an optional parameter but used here for authentication. Within the Github Action, you can publish with just four simple steps:</p>\n\n\n\n<p>Check-out the repository so that the job can access it:</p>\n\n\n\n<pre class=\"wp-block-code\"><code lang=\"yaml\" class=\"language-yaml\">- name: 'Checkout GitHub Action'\n  uses: actions/checkout@v2</code></pre>\n\n\n\n<p>Setup, the version of Node.js, to use as part of the job:</p>\n\n\n\n<pre class=\"wp-block-code\"><code lang=\"yaml\" class=\"language-yaml\">- name: Setup Node ${{ env.NODE_VERSION }} Environment\n  uses: actions/setup-node@v1\n  with:\n    node-version: ${{ env.NODE_VERSION }}</code></pre>\n\n\n\n<p>Install the vsce NPM package:</p>\n\n\n\n<pre title=\"\" class=\"wp-block-code\"><code lang=\"yaml\" class=\"language-yaml\">- name: Install the vsce npm package\n  run: |\n    npm install\n    npm install -g vsce</code></pre>\n\n\n\n<p>Run the vsce commands that will package and publish the extension pack:</p>\n\n\n\n<pre class=\"wp-block-code\"><code lang=\"yaml\" class=\"language-yaml\">- name: Package the extension pack\n  run: |\n    vsce package\n    vsce publish -p ${{ secrets.VSCODE_MARKETPLACE_TOKEN }}</code></pre>\n\n\n\n<p>The full Action using a real Extension Pack that is published to the Marketplace this way is <a href=\"http://link\" target=\"_blank\" rel=\"noreferrer noopener\">here</a>. You can also browse the other Actions used to develop on a separate branch, and so keeping the main branch inline with what is published and so that every commit is not published.</p>\n\n\n\n<p>Once the job has completed, it will take a few minutes to appear in the Marketplace as it needs to go through the Marketplace backend. You can check the progress if you navigate to your <a rel=\"noreferrer noopener\" href=\"https://marketplace.visualstudio.com/manage\" target=\"_blank\">Manage Publishers &amp; Exten</a><a href=\"https://marketplace.visualstudio.com/manage\" target=\"_blank\" rel=\"noreferrer noopener\">sions</a>.</p>\n\n\n\n<p>The repository for the Extension Pack I created for extensions that I think help with .NET and Azure development is on my GitHub account <a href=\"https://github.com/stuartleaver/vscode-dotnet-azure-extension-pack\" target=\"_blank\" rel=\"noreferrer noopener\">here</a>.</p>\n\n\n\n<p>Also, take a look at the extension which is named <a href=\"https://marketplace.visualstudio.com/items?itemName=stuartleaver.dotnet-azure-extensionpack\" target=\"_blank\" rel=\"noreferrer noopener\">.NET &amp; Azure Extension Pack in the Marketplace</a>. Maybe you want to try it out and leave a review!</p>\n",
+            "protected": false
+        },
+        "excerpt": {
+            "rendered": "<p>Creating a VS Code Extension Pack containing your favourite extensions or ones for a particular programming language and publish it to the VS Code Marketplace using a GitHub Action.</p>\n",
+            "protected": false
+        },
+        "author": 1,
+        "featured_media": 439,
+        "comment_status": "open",
+        "ping_status": "open",
+        "sticky": false,
+        "template": "",
+        "format": "standard",
+        "meta": [],
+        "categories": [
+            52,
+            22,
+            40,
+            51,
+            50,
+            49
+        ],
+        "tags": [
+            24,
+            37,
+            55,
+            46,
+            53,
+            54,
+            58,
+            57,
+            45,
+            59,
+            56
+        ],
+        "_links": {
+            "self": [
+                {
+                    "href": "https://stuartleaver.dev/wp-json/wp/v2/posts/422"
+                }
+            ],
+            "collection": [
+                {
+                    "href": "https://stuartleaver.dev/wp-json/wp/v2/posts"
+                }
+            ],
+            "about": [
+                {
+                    "href": "https://stuartleaver.dev/wp-json/wp/v2/types/post"
+                }
+            ],
+            "author": [
+                {
+                    "embeddable": true,
+                    "href": "https://stuartleaver.dev/wp-json/wp/v2/users/1"
+                }
+            ],
+            "replies": [
+                {
+                    "embeddable": true,
+                    "href": "https://stuartleaver.dev/wp-json/wp/v2/comments?post=422"
+                }
+            ],
+            "version-history": [
+                {
+                    "count": 10,
+                    "href": "https://stuartleaver.dev/wp-json/wp/v2/posts/422/revisions"
+                }
+            ],
+            "predecessor-version": [
+                {
+                    "id": 451,
+                    "href": "https://stuartleaver.dev/wp-json/wp/v2/posts/422/revisions/451"
+                }
+            ],
+            "wp:featuredmedia": [
+                {
+                    "embeddable": true,
+                    "href": "https://stuartleaver.dev/wp-json/wp/v2/media/439"
+                }
+            ],
+            "wp:attachment": [
+                {
+                    "href": "https://stuartleaver.dev/wp-json/wp/v2/media?parent=422"
+                }
+            ],
+            "wp:term": [
+                {
+                    "taxonomy": "category",
+                    "embeddable": true,
+                    "href": "https://stuartleaver.dev/wp-json/wp/v2/categories?post=422"
+                },
+                {
+                    "taxonomy": "post_tag",
+                    "embeddable": true,
+                    "href": "https://stuartleaver.dev/wp-json/wp/v2/tags?post=422"
+                }
+            ],
+            "curies": [
+                {
+                    "name": "wp",
+                    "href": "https://api.w.org/{rel}",
+                    "templated": true
+                }
+            ]
+        },
+        "_embedded": {
+            "author": [
+                {
+                    "id": 1,
+                    "name": "Stuart Leaver",
+                    "url": "https://stuartleaver.dev",
+                    "description": "I'm a C# developer with a passion for .NET Core, Azure and DevOps. If I'm not at a computer writing code, you'll probably find me either running, trying to play Chess or in front of Netflix.",
+                    "link": "https://stuartleaver.dev/author/stuartleaver/",
+                    "slug": "stuartleaver",
+                    "avatar_urls": {
+                        "24": "https://secure.gravatar.com/avatar/a12e97af54c0b2c7894f6f0b6eea0efb?s=24&d=mm&r=g",
+                        "48": "https://secure.gravatar.com/avatar/a12e97af54c0b2c7894f6f0b6eea0efb?s=48&d=mm&r=g",
+                        "96": "https://secure.gravatar.com/avatar/a12e97af54c0b2c7894f6f0b6eea0efb?s=96&d=mm&r=g"
+                    },
+                    "_links": {
+                        "self": [
+                            {
+                                "href": "https://stuartleaver.dev/wp-json/wp/v2/users/1"
+                            }
+                        ],
+                        "collection": [
+                            {
+                                "href": "https://stuartleaver.dev/wp-json/wp/v2/users"
+                            }
+                        ]
+                    }
+                }
+            ],
+            "wp:featuredmedia": [
+                {
+                    "id": 439,
+                    "date": "2020-06-17T18:37:06",
+                    "slug": "vs-code-extension-pack-github-action",
+                    "type": "attachment",
+                    "link": "https://stuartleaver.dev/creating-a-vs-code-extension-pack-and-publishing-through-a-github-action/vs-code-extension-pack-github-action/",
+                    "title": {
+                        "rendered": "Creating a VS Code Extension Pack and Publishing through a GitHub Action"
+                    },
+                    "author": 1,
+                    "caption": {
+                        "rendered": "<p>Creating a VS Code Extension Pack and Publishing through a GitHub Action</p>\n"
+                    },
+                    "alt_text": "Creating a VS Code Extension Pack and Publishing through a GitHub Action",
+                    "media_type": "image",
+                    "mime_type": "image/png",
+                    "media_details": {
+                        "width": 2400,
+                        "height": 1600,
+                        "file": "2020/06/vs-code-extension-pack-github-action.png",
+                        "sizes": {
+                            "medium": {
+                                "file": "vs-code-extension-pack-github-action-300x200.png",
+                                "width": 300,
+                                "height": 200,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2020/06/vs-code-extension-pack-github-action-300x200.png"
+                            },
+                            "large": {
+                                "file": "vs-code-extension-pack-github-action-1024x683.png",
+                                "width": 1024,
+                                "height": 683,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2020/06/vs-code-extension-pack-github-action-1024x683.png"
+                            },
+                            "thumbnail": {
+                                "file": "vs-code-extension-pack-github-action-150x150.png",
+                                "width": 150,
+                                "height": 150,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2020/06/vs-code-extension-pack-github-action-150x150.png"
+                            },
+                            "medium_large": {
+                                "file": "vs-code-extension-pack-github-action-768x512.png",
+                                "width": 768,
+                                "height": 512,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2020/06/vs-code-extension-pack-github-action-768x512.png"
+                            },
+                            "1536x1536": {
+                                "file": "vs-code-extension-pack-github-action-1536x1024.png",
+                                "width": 1536,
+                                "height": 1024,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2020/06/vs-code-extension-pack-github-action-1536x1024.png"
+                            },
+                            "2048x2048": {
+                                "file": "vs-code-extension-pack-github-action-2048x1365.png",
+                                "width": 2048,
+                                "height": 1365,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2020/06/vs-code-extension-pack-github-action-2048x1365.png"
+                            },
+                            "post-thumbnail": {
+                                "file": "vs-code-extension-pack-github-action-640x360.png",
+                                "width": 640,
+                                "height": 360,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2020/06/vs-code-extension-pack-github-action-640x360.png"
+                            },
+                            "stein-xs": {
+                                "file": "vs-code-extension-pack-github-action-320x180.png",
+                                "width": 320,
+                                "height": 180,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2020/06/vs-code-extension-pack-github-action-320x180.png"
+                            },
+                            "stein-sm": {
+                                "file": "vs-code-extension-pack-github-action-480x270.png",
+                                "width": 480,
+                                "height": 270,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2020/06/vs-code-extension-pack-github-action-480x270.png"
+                            },
+                            "stein-md": {
+                                "file": "vs-code-extension-pack-github-action-640x360.png",
+                                "width": 640,
+                                "height": 360,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2020/06/vs-code-extension-pack-github-action-640x360.png"
+                            },
+                            "stein-lg": {
+                                "file": "vs-code-extension-pack-github-action-960x540.png",
+                                "width": 960,
+                                "height": 540,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2020/06/vs-code-extension-pack-github-action-960x540.png"
+                            },
+                            "stein-xl": {
+                                "file": "vs-code-extension-pack-github-action-1280x720.png",
+                                "width": 1280,
+                                "height": 720,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2020/06/vs-code-extension-pack-github-action-1280x720.png"
+                            },
+                            "stein-2xl": {
+                                "file": "vs-code-extension-pack-github-action-1600x900.png",
+                                "width": 1600,
+                                "height": 900,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2020/06/vs-code-extension-pack-github-action-1600x900.png"
+                            },
+                            "stein-3xl": {
+                                "file": "vs-code-extension-pack-github-action-1920x1080.png",
+                                "width": 1920,
+                                "height": 1080,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2020/06/vs-code-extension-pack-github-action-1920x1080.png"
+                            },
+                            "stein-square-xs": {
+                                "file": "vs-code-extension-pack-github-action-80x80.png",
+                                "width": 80,
+                                "height": 80,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2020/06/vs-code-extension-pack-github-action-80x80.png"
+                            },
+                            "stein-square-sm": {
+                                "file": "vs-code-extension-pack-github-action-160x160.png",
+                                "width": 160,
+                                "height": 160,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2020/06/vs-code-extension-pack-github-action-160x160.png"
+                            },
+                            "stein-square-md": {
+                                "file": "vs-code-extension-pack-github-action-240x240.png",
+                                "width": 240,
+                                "height": 240,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2020/06/vs-code-extension-pack-github-action-240x240.png"
+                            },
+                            "stein-square-lg": {
+                                "file": "vs-code-extension-pack-github-action-320x320.png",
+                                "width": 320,
+                                "height": 320,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2020/06/vs-code-extension-pack-github-action-320x320.png"
+                            },
+                            "stein-square-xl": {
+                                "file": "vs-code-extension-pack-github-action-480x480.png",
+                                "width": 480,
+                                "height": 480,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2020/06/vs-code-extension-pack-github-action-480x480.png"
+                            },
+                            "stein-square-2xl": {
+                                "file": "vs-code-extension-pack-github-action-640x640.png",
+                                "width": 640,
+                                "height": 640,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2020/06/vs-code-extension-pack-github-action-640x640.png"
+                            },
+                            "stein-square-3xl": {
+                                "file": "vs-code-extension-pack-github-action-720x720.png",
+                                "width": 720,
+                                "height": 720,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2020/06/vs-code-extension-pack-github-action-720x720.png"
+                            },
+                            "full": {
+                                "file": "vs-code-extension-pack-github-action.png",
+                                "width": 2400,
+                                "height": 1600,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2020/06/vs-code-extension-pack-github-action.png"
+                            }
+                        },
+                        "image_meta": {
+                            "aperture": "0",
+                            "credit": "",
+                            "camera": "",
+                            "caption": "",
+                            "created_timestamp": "0",
+                            "copyright": "",
+                            "focal_length": "0",
+                            "iso": "0",
+                            "shutter_speed": "0",
+                            "title": "",
+                            "orientation": "0",
+                            "keywords": []
+                        }
+                    },
+                    "source_url": "https://stuartleaver.dev/wp-content/uploads/2020/06/vs-code-extension-pack-github-action.png",
+                    "_links": {
+                        "self": [
+                            {
+                                "href": "https://stuartleaver.dev/wp-json/wp/v2/media/439"
+                            }
+                        ],
+                        "collection": [
+                            {
+                                "href": "https://stuartleaver.dev/wp-json/wp/v2/media"
+                            }
+                        ],
+                        "about": [
+                            {
+                                "href": "https://stuartleaver.dev/wp-json/wp/v2/types/attachment"
+                            }
+                        ],
+                        "author": [
+                            {
+                                "embeddable": true,
+                                "href": "https://stuartleaver.dev/wp-json/wp/v2/users/1"
+                            }
+                        ],
+                        "replies": [
+                            {
+                                "embeddable": true,
+                                "href": "https://stuartleaver.dev/wp-json/wp/v2/comments?post=439"
+                            }
+                        ]
+                    }
+                }
+            ],
+            "wp:term": [
+                [
+                    {
+                        "id": 52,
+                        "link": "https://stuartleaver.dev/category/net/",
+                        "name": ".NET",
+                        "slug": "net",
+                        "taxonomy": "category",
+                        "_links": {
+                            "self": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/categories/52"
+                                }
+                            ],
+                            "collection": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/categories"
+                                }
+                            ],
+                            "about": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/taxonomies/category"
+                                }
+                            ],
+                            "wp:post_type": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/posts?categories=52"
+                                }
+                            ],
+                            "curies": [
+                                {
+                                    "name": "wp",
+                                    "href": "https://api.w.org/{rel}",
+                                    "templated": true
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "id": 22,
+                        "link": "https://stuartleaver.dev/category/azure/",
+                        "name": "Azure",
+                        "slug": "azure",
+                        "taxonomy": "category",
+                        "_links": {
+                            "self": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/categories/22"
+                                }
+                            ],
+                            "collection": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/categories"
+                                }
+                            ],
+                            "about": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/taxonomies/category"
+                                }
+                            ],
+                            "wp:post_type": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/posts?categories=22"
+                                }
+                            ],
+                            "curies": [
+                                {
+                                    "name": "wp",
+                                    "href": "https://api.w.org/{rel}",
+                                    "templated": true
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "id": 40,
+                        "link": "https://stuartleaver.dev/category/azure/azure-serverless/azure-functions/",
+                        "name": "Azure Functions",
+                        "slug": "azure-functions",
+                        "taxonomy": "category",
+                        "_links": {
+                            "self": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/categories/40"
+                                }
+                            ],
+                            "collection": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/categories"
+                                }
+                            ],
+                            "about": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/taxonomies/category"
+                                }
+                            ],
+                            "up": [
+                                {
+                                    "embeddable": true,
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/categories/23"
+                                }
+                            ],
+                            "wp:post_type": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/posts?categories=40"
+                                }
+                            ],
+                            "curies": [
+                                {
+                                    "name": "wp",
+                                    "href": "https://api.w.org/{rel}",
+                                    "templated": true
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "id": 51,
+                        "link": "https://stuartleaver.dev/category/vs-code/extensions/extension-pack/",
+                        "name": "Extension Pack",
+                        "slug": "extension-pack",
+                        "taxonomy": "category",
+                        "_links": {
+                            "self": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/categories/51"
+                                }
+                            ],
+                            "collection": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/categories"
+                                }
+                            ],
+                            "about": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/taxonomies/category"
+                                }
+                            ],
+                            "up": [
+                                {
+                                    "embeddable": true,
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/categories/50"
+                                }
+                            ],
+                            "wp:post_type": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/posts?categories=51"
+                                }
+                            ],
+                            "curies": [
+                                {
+                                    "name": "wp",
+                                    "href": "https://api.w.org/{rel}",
+                                    "templated": true
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "id": 50,
+                        "link": "https://stuartleaver.dev/category/vs-code/extensions/",
+                        "name": "Extensions",
+                        "slug": "extensions",
+                        "taxonomy": "category",
+                        "_links": {
+                            "self": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/categories/50"
+                                }
+                            ],
+                            "collection": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/categories"
+                                }
+                            ],
+                            "about": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/taxonomies/category"
+                                }
+                            ],
+                            "up": [
+                                {
+                                    "embeddable": true,
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/categories/49"
+                                }
+                            ],
+                            "wp:post_type": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/posts?categories=50"
+                                }
+                            ],
+                            "curies": [
+                                {
+                                    "name": "wp",
+                                    "href": "https://api.w.org/{rel}",
+                                    "templated": true
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "id": 49,
+                        "link": "https://stuartleaver.dev/category/vs-code/",
+                        "name": "VS Code",
+                        "slug": "vs-code",
+                        "taxonomy": "category",
+                        "_links": {
+                            "self": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/categories/49"
+                                }
+                            ],
+                            "collection": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/categories"
+                                }
+                            ],
+                            "about": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/taxonomies/category"
+                                }
+                            ],
+                            "wp:post_type": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/posts?categories=49"
+                                }
+                            ],
+                            "curies": [
+                                {
+                                    "name": "wp",
+                                    "href": "https://api.w.org/{rel}",
+                                    "templated": true
+                                }
+                            ]
+                        }
+                    }
+                ],
+                [
+                    {
+                        "id": 24,
+                        "link": "https://stuartleaver.dev/tag/azure/",
+                        "name": "azure",
+                        "slug": "azure",
+                        "taxonomy": "post_tag",
+                        "_links": {
+                            "self": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/tags/24"
+                                }
+                            ],
+                            "collection": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/tags"
+                                }
+                            ],
+                            "about": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/taxonomies/post_tag"
+                                }
+                            ],
+                            "wp:post_type": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/posts?tags=24"
+                                }
+                            ],
+                            "curies": [
+                                {
+                                    "name": "wp",
+                                    "href": "https://api.w.org/{rel}",
+                                    "templated": true
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "id": 37,
+                        "link": "https://stuartleaver.dev/tag/azure-functions/",
+                        "name": "azure-functions",
+                        "slug": "azure-functions",
+                        "taxonomy": "post_tag",
+                        "_links": {
+                            "self": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/tags/37"
+                                }
+                            ],
+                            "collection": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/tags"
+                                }
+                            ],
+                            "about": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/taxonomies/post_tag"
+                                }
+                            ],
+                            "wp:post_type": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/posts?tags=37"
+                                }
+                            ],
+                            "curies": [
+                                {
+                                    "name": "wp",
+                                    "href": "https://api.w.org/{rel}",
+                                    "templated": true
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "id": 55,
+                        "link": "https://stuartleaver.dev/tag/extension-pack/",
+                        "name": "extension pack",
+                        "slug": "extension-pack",
+                        "taxonomy": "post_tag",
+                        "_links": {
+                            "self": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/tags/55"
+                                }
+                            ],
+                            "collection": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/tags"
+                                }
+                            ],
+                            "about": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/taxonomies/post_tag"
+                                }
+                            ],
+                            "wp:post_type": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/posts?tags=55"
+                                }
+                            ],
+                            "curies": [
+                                {
+                                    "name": "wp",
+                                    "href": "https://api.w.org/{rel}",
+                                    "templated": true
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "id": 46,
+                        "link": "https://stuartleaver.dev/tag/extensions/",
+                        "name": "extensions",
+                        "slug": "extensions",
+                        "taxonomy": "post_tag",
+                        "_links": {
+                            "self": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/tags/46"
+                                }
+                            ],
+                            "collection": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/tags"
+                                }
+                            ],
+                            "about": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/taxonomies/post_tag"
+                                }
+                            ],
+                            "wp:post_type": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/posts?tags=46"
+                                }
+                            ],
+                            "curies": [
+                                {
+                                    "name": "wp",
+                                    "href": "https://api.w.org/{rel}",
+                                    "templated": true
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "id": 53,
+                        "link": "https://stuartleaver.dev/tag/github/",
+                        "name": "GitHub",
+                        "slug": "github",
+                        "taxonomy": "post_tag",
+                        "_links": {
+                            "self": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/tags/53"
+                                }
+                            ],
+                            "collection": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/tags"
+                                }
+                            ],
+                            "about": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/taxonomies/post_tag"
+                                }
+                            ],
+                            "wp:post_type": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/posts?tags=53"
+                                }
+                            ],
+                            "curies": [
+                                {
+                                    "name": "wp",
+                                    "href": "https://api.w.org/{rel}",
+                                    "templated": true
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "id": 54,
+                        "link": "https://stuartleaver.dev/tag/github-action/",
+                        "name": "GitHub Action",
+                        "slug": "github-action",
+                        "taxonomy": "post_tag",
+                        "_links": {
+                            "self": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/tags/54"
+                                }
+                            ],
+                            "collection": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/tags"
+                                }
+                            ],
+                            "about": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/taxonomies/post_tag"
+                                }
+                            ],
+                            "wp:post_type": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/posts?tags=54"
+                                }
+                            ],
+                            "curies": [
+                                {
+                                    "name": "wp",
+                                    "href": "https://api.w.org/{rel}",
+                                    "templated": true
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "id": 58,
+                        "link": "https://stuartleaver.dev/tag/node-js/",
+                        "name": "Node.js",
+                        "slug": "node-js",
+                        "taxonomy": "post_tag",
+                        "_links": {
+                            "self": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/tags/58"
+                                }
+                            ],
+                            "collection": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/tags"
+                                }
+                            ],
+                            "about": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/taxonomies/post_tag"
+                                }
+                            ],
+                            "wp:post_type": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/posts?tags=58"
+                                }
+                            ],
+                            "curies": [
+                                {
+                                    "name": "wp",
+                                    "href": "https://api.w.org/{rel}",
+                                    "templated": true
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "id": 57,
+                        "link": "https://stuartleaver.dev/tag/npm/",
+                        "name": "npm",
+                        "slug": "npm",
+                        "taxonomy": "post_tag",
+                        "_links": {
+                            "self": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/tags/57"
+                                }
+                            ],
+                            "collection": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/tags"
+                                }
+                            ],
+                            "about": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/taxonomies/post_tag"
+                                }
+                            ],
+                            "wp:post_type": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/posts?tags=57"
+                                }
+                            ],
+                            "curies": [
+                                {
+                                    "name": "wp",
+                                    "href": "https://api.w.org/{rel}",
+                                    "templated": true
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "id": 45,
+                        "link": "https://stuartleaver.dev/tag/vs-code/",
+                        "name": "vs code",
+                        "slug": "vs-code",
+                        "taxonomy": "post_tag",
+                        "_links": {
+                            "self": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/tags/45"
+                                }
+                            ],
+                            "collection": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/tags"
+                                }
+                            ],
+                            "about": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/taxonomies/post_tag"
+                                }
+                            ],
+                            "wp:post_type": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/posts?tags=45"
+                                }
+                            ],
+                            "curies": [
+                                {
+                                    "name": "wp",
+                                    "href": "https://api.w.org/{rel}",
+                                    "templated": true
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "id": 59,
+                        "link": "https://stuartleaver.dev/tag/vsce/",
+                        "name": "vsce",
+                        "slug": "vsce",
+                        "taxonomy": "post_tag",
+                        "_links": {
+                            "self": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/tags/59"
+                                }
+                            ],
+                            "collection": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/tags"
+                                }
+                            ],
+                            "about": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/taxonomies/post_tag"
+                                }
+                            ],
+                            "wp:post_type": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/posts?tags=59"
+                                }
+                            ],
+                            "curies": [
+                                {
+                                    "name": "wp",
+                                    "href": "https://api.w.org/{rel}",
+                                    "templated": true
+                                }
+                            ]
+                        }
+                    }
+                ]
+            ]
+        }
+    },
+    {
+        "id": 409,
+        "date": "2020-05-12T20:03:25",
+        "date_gmt": "2020-05-12T19:03:25",
+        "guid": {
+            "rendered": "https://stuartleaver.dev/?p=409"
+        },
+        "modified": "2020-05-12T20:03:27",
+        "modified_gmt": "2020-05-12T19:03:27",
+        "slug": "using-visual-studio-code-to-deploy-to-azure-function-and-app-service-resources",
+        "status": "publish",
+        "type": "post",
+        "link": "https://stuartleaver.dev/using-visual-studio-code-to-deploy-to-azure-function-and-app-service-resources/",
+        "title": {
+            "rendered": "Using Visual Studio Code and extensions to deploy to Azure Function and App Service resources"
+        },
+        "content": {
+            "rendered": "\n<p>You&#8217;ve written an Azure Function or have created a website and are now looking to deploy them to Azure. This quick blog post walks you through a few simple steps for each using VS Code and the available extensions.</p>\n\n\n\n<h2>VS Code Extensions</h2>\n\n\n\n<p>What makes this so easy is extensions which add new features to VS Code. To make the following steps possible, you will need to <a rel=\"noreferrer noopener\" href=\"https://code.visualstudio.com/docs/editor/extension-gallery\" target=\"_blank\">install</a> the following extension:</p>\n\n\n\n<ul><li><a href=\"https://marketplace.visualstudio.com/items?itemName=stuartleaver.dotnet-azure-extensionpack\">.NET &amp; Azure Extension Pack</a>&nbsp;(I know the author!)</li></ul>\n\n\n\n<p>That extension will install the ones required along with some other recommendations, but if you would like to just install the ones needed, they are:</p>\n\n\n\n<ul><li><a href=\"https://marketplace.visualstudio.com/items?itemName=ms-vscode.azure-account\">Azure Account</a></li><li><a href=\"https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azurefunctions\">Azure Functions</a></li><li><a href=\"https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azureappservice\">Azure App Service</a></li></ul>\n\n\n\n<h2>Deploying to an Azure Function App</h2>\n\n\n\n<p>This will assume that the resource you wish to deploy to already exists. If it doesn&#8217;t, the on screen prompts from step 3 should point you in the right direction.</p>\n\n\n\n<ol><li>Open the&nbsp;folder that holds your Function App project in VS Code. The following is an example from the <a rel=\"noreferrer noopener\" href=\"http://flight-tracker-real-time-app-with-azure-functions-signalr-and-cosmosdb\" target=\"_blank\">Flight Tracker</a> code:</li></ol>\n\n\n\n<figure class=\"wp-block-image size-large\"><a href=\"https://github.com/stuartleaver/flight-tracker-cosmosdb-functions-serverless/blob/master/assets/deployment-functionapp-explorer.png\" target=\"_blank\" rel=\"noreferrer noopener\"><img src=\"https://stuartleaver.dev/wp-content/uploads/2020/05/image.png\" alt=\"flight-tracker-function-app-code-in-vs-code\" class=\"wp-image-411 lazyload\" data-srcset=\"https://stuartleaver.dev/wp-content/uploads/2020/05/image.png 305w, https://stuartleaver.dev/wp-content/uploads/2020/05/image-191x300.png 191w\" sizes=\"auto\" /></a></figure>\n\n\n\n<ol start=\"2\"><li>Sign in to your Azure Account by clicking &#8220;Sign in to Azure&#8230;&#8221; in the Azure Functions explorer.</li><li>Select the button to deploy</li></ol>\n\n\n\n<figure class=\"wp-block-image size-large\"><img src=\"https://stuartleaver.dev/wp-content/uploads/2020/05/image-1.png\" alt=\"vs-code-deploy-function-app\" class=\"wp-image-412 lazyload\" data-srcset=\"https://stuartleaver.dev/wp-content/uploads/2020/05/image-1.png 461w, https://stuartleaver.dev/wp-content/uploads/2020/05/image-1-289x300.png 289w\" sizes=\"auto\" /></figure>\n\n\n\n<ol start=\"4\"><li>Choose the Function App that was created by the ARM Template.</li><li>Click Deploy.</li></ol>\n\n\n\n<h2>Deploying to an App Service</h2>\n\n\n\n<ol><li>Open the&nbsp;folder that holds your website project in VS Code. The following is an example from the <a rel=\"noreferrer noopener\" href=\"http://flight-tracker-real-time-app-with-azure-functions-signalr-and-cosmosdb\" target=\"_blank\">Flight Tracker</a> code:</li></ol>\n\n\n\n<figure class=\"wp-block-image size-large\"><img src=\"https://stuartleaver.dev/wp-content/uploads/2020/05/image-2.png\" alt=\"flight-tracker-website-code-in-vs-code\" class=\"wp-image-414 lazyload\" data-srcset=\"https://stuartleaver.dev/wp-content/uploads/2020/05/image-2.png 284w, https://stuartleaver.dev/wp-content/uploads/2020/05/image-2-188x300.png 188w\" sizes=\"auto\" /></figure>\n\n\n\n<ol start=\"2\"><li>Sign in to your Azure Account by clicking &#8220;Sign in to Azure&#8230;&#8221; in the Azure App Service explorer.</li><li>Select the button to deploy</li></ol>\n\n\n\n<figure class=\"wp-block-image size-large\"><img src=\"https://stuartleaver.dev/wp-content/uploads/2020/05/image-3.png\" alt=\"vs-code-deploy-app-service\" class=\"wp-image-415 lazyload\" data-srcset=\"https://stuartleaver.dev/wp-content/uploads/2020/05/image-3.png 424w, https://stuartleaver.dev/wp-content/uploads/2020/05/image-3-300x270.png 300w\" sizes=\"auto\" /></figure>\n\n\n\n<ol start=\"4\"><li>Choose the App Service that was created by the ARM Template.</li><li>Click Deploy.</li></ol>\n\n\n\n<p></p>\n",
+            "protected": false
+        },
+        "excerpt": {
+            "rendered": "<p>You&#8217;ve written an Azure Function or have created a website and are now looking to deploy them to Azure. This quick blog post walks you through a few simple steps for each using VS Code and the available extensions.</p>\n",
+            "protected": false
+        },
+        "author": 1,
+        "featured_media": 417,
+        "comment_status": "open",
+        "ping_status": "open",
+        "sticky": false,
+        "template": "",
+        "format": "standard",
+        "meta": [],
+        "categories": [
+            43,
+            22,
+            40
+        ],
+        "tags": [
+            24,
+            28,
+            37,
+            46,
+            44,
+            45
+        ],
+        "_links": {
+            "self": [
+                {
+                    "href": "https://stuartleaver.dev/wp-json/wp/v2/posts/409"
+                }
+            ],
+            "collection": [
+                {
+                    "href": "https://stuartleaver.dev/wp-json/wp/v2/posts"
+                }
+            ],
+            "about": [
+                {
+                    "href": "https://stuartleaver.dev/wp-json/wp/v2/types/post"
+                }
+            ],
+            "author": [
+                {
+                    "embeddable": true,
+                    "href": "https://stuartleaver.dev/wp-json/wp/v2/users/1"
+                }
+            ],
+            "replies": [
+                {
+                    "embeddable": true,
+                    "href": "https://stuartleaver.dev/wp-json/wp/v2/comments?post=409"
+                }
+            ],
+            "version-history": [
+                {
+                    "count": 4,
+                    "href": "https://stuartleaver.dev/wp-json/wp/v2/posts/409/revisions"
+                }
+            ],
+            "predecessor-version": [
+                {
+                    "id": 418,
+                    "href": "https://stuartleaver.dev/wp-json/wp/v2/posts/409/revisions/418"
+                }
+            ],
+            "wp:featuredmedia": [
+                {
+                    "embeddable": true,
+                    "href": "https://stuartleaver.dev/wp-json/wp/v2/media/417"
+                }
+            ],
+            "wp:attachment": [
+                {
+                    "href": "https://stuartleaver.dev/wp-json/wp/v2/media?parent=409"
+                }
+            ],
+            "wp:term": [
+                {
+                    "taxonomy": "category",
+                    "embeddable": true,
+                    "href": "https://stuartleaver.dev/wp-json/wp/v2/categories?post=409"
+                },
+                {
+                    "taxonomy": "post_tag",
+                    "embeddable": true,
+                    "href": "https://stuartleaver.dev/wp-json/wp/v2/tags?post=409"
+                }
+            ],
+            "curies": [
+                {
+                    "name": "wp",
+                    "href": "https://api.w.org/{rel}",
+                    "templated": true
+                }
+            ]
+        },
+        "_embedded": {
+            "author": [
+                {
+                    "id": 1,
+                    "name": "Stuart Leaver",
+                    "url": "https://stuartleaver.dev",
+                    "description": "I'm a C# developer with a passion for .NET Core, Azure and DevOps. If I'm not at a computer writing code, you'll probably find me either running, trying to play Chess or in front of Netflix.",
+                    "link": "https://stuartleaver.dev/author/stuartleaver/",
+                    "slug": "stuartleaver",
+                    "avatar_urls": {
+                        "24": "https://secure.gravatar.com/avatar/a12e97af54c0b2c7894f6f0b6eea0efb?s=24&d=mm&r=g",
+                        "48": "https://secure.gravatar.com/avatar/a12e97af54c0b2c7894f6f0b6eea0efb?s=48&d=mm&r=g",
+                        "96": "https://secure.gravatar.com/avatar/a12e97af54c0b2c7894f6f0b6eea0efb?s=96&d=mm&r=g"
+                    },
+                    "_links": {
+                        "self": [
+                            {
+                                "href": "https://stuartleaver.dev/wp-json/wp/v2/users/1"
+                            }
+                        ],
+                        "collection": [
+                            {
+                                "href": "https://stuartleaver.dev/wp-json/wp/v2/users"
+                            }
+                        ]
+                    }
+                }
+            ],
+            "wp:featuredmedia": [
+                {
+                    "id": 417,
+                    "date": "2020-05-11T22:37:39",
+                    "slug": "vs-code-azure-function-app-service-deploy",
+                    "type": "attachment",
+                    "link": "https://stuartleaver.dev/vs-code-azure-function-app-service-deploy/",
+                    "title": {
+                        "rendered": "VS Code to Deploy Azure Functions and App Service Plans"
+                    },
+                    "author": 1,
+                    "caption": {
+                        "rendered": ""
+                    },
+                    "alt_text": "vs-code-azure-function-app-service-deploy",
+                    "media_type": "image",
+                    "mime_type": "image/png",
+                    "media_details": {
+                        "width": 2400,
+                        "height": 1600,
+                        "file": "2020/05/vs-code-azure-function-app-service-deploy.png",
+                        "sizes": {
+                            "medium": {
+                                "file": "vs-code-azure-function-app-service-deploy-300x200.png",
+                                "width": 300,
+                                "height": 200,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2020/05/vs-code-azure-function-app-service-deploy-300x200.png"
+                            },
+                            "large": {
+                                "file": "vs-code-azure-function-app-service-deploy-1024x683.png",
+                                "width": 1024,
+                                "height": 683,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2020/05/vs-code-azure-function-app-service-deploy-1024x683.png"
+                            },
+                            "thumbnail": {
+                                "file": "vs-code-azure-function-app-service-deploy-150x150.png",
+                                "width": 150,
+                                "height": 150,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2020/05/vs-code-azure-function-app-service-deploy-150x150.png"
+                            },
+                            "medium_large": {
+                                "file": "vs-code-azure-function-app-service-deploy-768x512.png",
+                                "width": 768,
+                                "height": 512,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2020/05/vs-code-azure-function-app-service-deploy-768x512.png"
+                            },
+                            "1536x1536": {
+                                "file": "vs-code-azure-function-app-service-deploy-1536x1024.png",
+                                "width": 1536,
+                                "height": 1024,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2020/05/vs-code-azure-function-app-service-deploy-1536x1024.png"
+                            },
+                            "2048x2048": {
+                                "file": "vs-code-azure-function-app-service-deploy-2048x1365.png",
+                                "width": 2048,
+                                "height": 1365,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2020/05/vs-code-azure-function-app-service-deploy-2048x1365.png"
+                            },
+                            "post-thumbnail": {
+                                "file": "vs-code-azure-function-app-service-deploy-640x360.png",
+                                "width": 640,
+                                "height": 360,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2020/05/vs-code-azure-function-app-service-deploy-640x360.png"
+                            },
+                            "stein-xs": {
+                                "file": "vs-code-azure-function-app-service-deploy-320x180.png",
+                                "width": 320,
+                                "height": 180,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2020/05/vs-code-azure-function-app-service-deploy-320x180.png"
+                            },
+                            "stein-sm": {
+                                "file": "vs-code-azure-function-app-service-deploy-480x270.png",
+                                "width": 480,
+                                "height": 270,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2020/05/vs-code-azure-function-app-service-deploy-480x270.png"
+                            },
+                            "stein-md": {
+                                "file": "vs-code-azure-function-app-service-deploy-640x360.png",
+                                "width": 640,
+                                "height": 360,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2020/05/vs-code-azure-function-app-service-deploy-640x360.png"
+                            },
+                            "stein-lg": {
+                                "file": "vs-code-azure-function-app-service-deploy-960x540.png",
+                                "width": 960,
+                                "height": 540,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2020/05/vs-code-azure-function-app-service-deploy-960x540.png"
+                            },
+                            "stein-xl": {
+                                "file": "vs-code-azure-function-app-service-deploy-1280x720.png",
+                                "width": 1280,
+                                "height": 720,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2020/05/vs-code-azure-function-app-service-deploy-1280x720.png"
+                            },
+                            "stein-2xl": {
+                                "file": "vs-code-azure-function-app-service-deploy-1600x900.png",
+                                "width": 1600,
+                                "height": 900,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2020/05/vs-code-azure-function-app-service-deploy-1600x900.png"
+                            },
+                            "stein-3xl": {
+                                "file": "vs-code-azure-function-app-service-deploy-1920x1080.png",
+                                "width": 1920,
+                                "height": 1080,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2020/05/vs-code-azure-function-app-service-deploy-1920x1080.png"
+                            },
+                            "stein-square-xs": {
+                                "file": "vs-code-azure-function-app-service-deploy-80x80.png",
+                                "width": 80,
+                                "height": 80,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2020/05/vs-code-azure-function-app-service-deploy-80x80.png"
+                            },
+                            "stein-square-sm": {
+                                "file": "vs-code-azure-function-app-service-deploy-160x160.png",
+                                "width": 160,
+                                "height": 160,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2020/05/vs-code-azure-function-app-service-deploy-160x160.png"
+                            },
+                            "stein-square-md": {
+                                "file": "vs-code-azure-function-app-service-deploy-240x240.png",
+                                "width": 240,
+                                "height": 240,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2020/05/vs-code-azure-function-app-service-deploy-240x240.png"
+                            },
+                            "stein-square-lg": {
+                                "file": "vs-code-azure-function-app-service-deploy-320x320.png",
+                                "width": 320,
+                                "height": 320,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2020/05/vs-code-azure-function-app-service-deploy-320x320.png"
+                            },
+                            "stein-square-xl": {
+                                "file": "vs-code-azure-function-app-service-deploy-480x480.png",
+                                "width": 480,
+                                "height": 480,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2020/05/vs-code-azure-function-app-service-deploy-480x480.png"
+                            },
+                            "stein-square-2xl": {
+                                "file": "vs-code-azure-function-app-service-deploy-640x640.png",
+                                "width": 640,
+                                "height": 640,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2020/05/vs-code-azure-function-app-service-deploy-640x640.png"
+                            },
+                            "stein-square-3xl": {
+                                "file": "vs-code-azure-function-app-service-deploy-720x720.png",
+                                "width": 720,
+                                "height": 720,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2020/05/vs-code-azure-function-app-service-deploy-720x720.png"
+                            },
+                            "full": {
+                                "file": "vs-code-azure-function-app-service-deploy.png",
+                                "width": 2400,
+                                "height": 1600,
+                                "mime_type": "image/png",
+                                "source_url": "https://stuartleaver.dev/wp-content/uploads/2020/05/vs-code-azure-function-app-service-deploy.png"
+                            }
+                        },
+                        "image_meta": {
+                            "aperture": "0",
+                            "credit": "",
+                            "camera": "",
+                            "caption": "",
+                            "created_timestamp": "0",
+                            "copyright": "",
+                            "focal_length": "0",
+                            "iso": "0",
+                            "shutter_speed": "0",
+                            "title": "",
+                            "orientation": "0",
+                            "keywords": []
+                        }
+                    },
+                    "source_url": "https://stuartleaver.dev/wp-content/uploads/2020/05/vs-code-azure-function-app-service-deploy.png",
+                    "_links": {
+                        "self": [
+                            {
+                                "href": "https://stuartleaver.dev/wp-json/wp/v2/media/417"
+                            }
+                        ],
+                        "collection": [
+                            {
+                                "href": "https://stuartleaver.dev/wp-json/wp/v2/media"
+                            }
+                        ],
+                        "about": [
+                            {
+                                "href": "https://stuartleaver.dev/wp-json/wp/v2/types/attachment"
+                            }
+                        ],
+                        "author": [
+                            {
+                                "embeddable": true,
+                                "href": "https://stuartleaver.dev/wp-json/wp/v2/users/1"
+                            }
+                        ],
+                        "replies": [
+                            {
+                                "embeddable": true,
+                                "href": "https://stuartleaver.dev/wp-json/wp/v2/comments?post=417"
+                            }
+                        ]
+                    }
+                }
+            ],
+            "wp:term": [
+                [
+                    {
+                        "id": 43,
+                        "link": "https://stuartleaver.dev/category/azure/azure-serverless/app-service/",
+                        "name": "App Service",
+                        "slug": "app-service",
+                        "taxonomy": "category",
+                        "_links": {
+                            "self": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/categories/43"
+                                }
+                            ],
+                            "collection": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/categories"
+                                }
+                            ],
+                            "about": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/taxonomies/category"
+                                }
+                            ],
+                            "up": [
+                                {
+                                    "embeddable": true,
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/categories/23"
+                                }
+                            ],
+                            "wp:post_type": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/posts?categories=43"
+                                }
+                            ],
+                            "curies": [
+                                {
+                                    "name": "wp",
+                                    "href": "https://api.w.org/{rel}",
+                                    "templated": true
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "id": 22,
+                        "link": "https://stuartleaver.dev/category/azure/",
+                        "name": "Azure",
+                        "slug": "azure",
+                        "taxonomy": "category",
+                        "_links": {
+                            "self": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/categories/22"
+                                }
+                            ],
+                            "collection": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/categories"
+                                }
+                            ],
+                            "about": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/taxonomies/category"
+                                }
+                            ],
+                            "wp:post_type": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/posts?categories=22"
+                                }
+                            ],
+                            "curies": [
+                                {
+                                    "name": "wp",
+                                    "href": "https://api.w.org/{rel}",
+                                    "templated": true
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "id": 40,
+                        "link": "https://stuartleaver.dev/category/azure/azure-serverless/azure-functions/",
+                        "name": "Azure Functions",
+                        "slug": "azure-functions",
+                        "taxonomy": "category",
+                        "_links": {
+                            "self": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/categories/40"
+                                }
+                            ],
+                            "collection": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/categories"
+                                }
+                            ],
+                            "about": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/taxonomies/category"
+                                }
+                            ],
+                            "up": [
+                                {
+                                    "embeddable": true,
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/categories/23"
+                                }
+                            ],
+                            "wp:post_type": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/posts?categories=40"
+                                }
+                            ],
+                            "curies": [
+                                {
+                                    "name": "wp",
+                                    "href": "https://api.w.org/{rel}",
+                                    "templated": true
+                                }
+                            ]
+                        }
+                    }
+                ],
+                [
+                    {
+                        "id": 24,
+                        "link": "https://stuartleaver.dev/tag/azure/",
+                        "name": "azure",
+                        "slug": "azure",
+                        "taxonomy": "post_tag",
+                        "_links": {
+                            "self": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/tags/24"
+                                }
+                            ],
+                            "collection": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/tags"
+                                }
+                            ],
+                            "about": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/taxonomies/post_tag"
+                                }
+                            ],
+                            "wp:post_type": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/posts?tags=24"
+                                }
+                            ],
+                            "curies": [
+                                {
+                                    "name": "wp",
+                                    "href": "https://api.w.org/{rel}",
+                                    "templated": true
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "id": 28,
+                        "link": "https://stuartleaver.dev/tag/azure-app-service/",
+                        "name": "azure-app-service",
+                        "slug": "azure-app-service",
+                        "taxonomy": "post_tag",
+                        "_links": {
+                            "self": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/tags/28"
+                                }
+                            ],
+                            "collection": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/tags"
+                                }
+                            ],
+                            "about": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/taxonomies/post_tag"
+                                }
+                            ],
+                            "wp:post_type": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/posts?tags=28"
+                                }
+                            ],
+                            "curies": [
+                                {
+                                    "name": "wp",
+                                    "href": "https://api.w.org/{rel}",
+                                    "templated": true
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "id": 37,
+                        "link": "https://stuartleaver.dev/tag/azure-functions/",
+                        "name": "azure-functions",
+                        "slug": "azure-functions",
+                        "taxonomy": "post_tag",
+                        "_links": {
+                            "self": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/tags/37"
+                                }
+                            ],
+                            "collection": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/tags"
+                                }
+                            ],
+                            "about": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/taxonomies/post_tag"
+                                }
+                            ],
+                            "wp:post_type": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/posts?tags=37"
+                                }
+                            ],
+                            "curies": [
+                                {
+                                    "name": "wp",
+                                    "href": "https://api.w.org/{rel}",
+                                    "templated": true
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "id": 46,
+                        "link": "https://stuartleaver.dev/tag/extensions/",
+                        "name": "extensions",
+                        "slug": "extensions",
+                        "taxonomy": "post_tag",
+                        "_links": {
+                            "self": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/tags/46"
+                                }
+                            ],
+                            "collection": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/tags"
+                                }
+                            ],
+                            "about": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/taxonomies/post_tag"
+                                }
+                            ],
+                            "wp:post_type": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/posts?tags=46"
+                                }
+                            ],
+                            "curies": [
+                                {
+                                    "name": "wp",
+                                    "href": "https://api.w.org/{rel}",
+                                    "templated": true
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "id": 44,
+                        "link": "https://stuartleaver.dev/tag/visual-studio-code/",
+                        "name": "visual studio code",
+                        "slug": "visual-studio-code",
+                        "taxonomy": "post_tag",
+                        "_links": {
+                            "self": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/tags/44"
+                                }
+                            ],
+                            "collection": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/tags"
+                                }
+                            ],
+                            "about": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/taxonomies/post_tag"
+                                }
+                            ],
+                            "wp:post_type": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/posts?tags=44"
+                                }
+                            ],
+                            "curies": [
+                                {
+                                    "name": "wp",
+                                    "href": "https://api.w.org/{rel}",
+                                    "templated": true
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "id": 45,
+                        "link": "https://stuartleaver.dev/tag/vs-code/",
+                        "name": "vs code",
+                        "slug": "vs-code",
+                        "taxonomy": "post_tag",
+                        "_links": {
+                            "self": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/tags/45"
+                                }
+                            ],
+                            "collection": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/tags"
+                                }
+                            ],
+                            "about": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/taxonomies/post_tag"
+                                }
+                            ],
+                            "wp:post_type": [
+                                {
+                                    "href": "https://stuartleaver.dev/wp-json/wp/v2/posts?tags=45"
+                                }
+                            ],
+                            "curies": [
+                                {
+                                    "name": "wp",
+                                    "href": "https://api.w.org/{rel}",
+                                    "templated": true
+                                }
+                            ]
+                        }
+                    }
+                ]
+            ]
+        }
+    }
+]

@@ -1,0 +1,72 @@
+{
+    "experience": {
+        "title": "Experience",
+        "items": [
+            {
+                "title": "Senior Software Engineer",
+                "date": "06/2019 - Present",
+                "company": "HX (inc Psyon)",
+                "description": "Working as the lead on several projects with teams of the best minds in specialty insurance, data analytics, insurtech and design to transform insurance from the inside out."
+            },
+            {
+                "title": "IT Developer",
+                "date": "10/2018 - 06/2019",
+                "company": "Cubic Transportation Systems",
+                "description": "Worked across the wider IT Monitoring team and horizontally with the Service, Engineering and Test teams. Ensuring that the primary monitoring tool used by Transport for London is performing correctly and meets the customers’ expectations."
+            },
+            {
+                "title": "IT Developer",
+                "date": "04/2015 - 10/2018",
+                "company": "Cubic Transportation Systems",
+                "description": "Worked across the wider IT Monitoring team and horizontally with the Service, Engineering and Test teams. Ensuring that the primary monitoring tool used by Transport for London is performing correctly and meets the customers’ expectations."
+            },
+            {
+                "title": "Senior Software Engineer",
+                "date": "02/2013 - 04/2015",
+                "company": "IHS",
+                "description": "Working within a team of 35 people across different countries using agile methodologies to develop and maintain applications and ETL’s used within the company for creating business critical content and insight mainly within the Maritime and Defence business lines."
+            },
+            {
+                "title": "Software Engineer",
+                "date": "05/2006 - 02/2013",
+                "company": "IHS",
+                "description": "Working in a small team of developers maintaining and evolving internal and external facing Maritime applications in line with the changing requirements of the business."
+            },
+            {
+                "title": "Software Developer",
+                "date": "06/2002 - 05/2006",
+                "company": "Telegan Protection Ltd",
+                "description": "Responsible for the software and network infrastructure within a small group of companies encompassing fire protection as well as marine and land signage."
+            }
+        ]
+    },
+    "education": {
+        "title": "Education",
+        "items": [
+            {
+                "title": "MSc Software Development",
+                "date": "2012 – 2015",
+                "company": "The Open University",
+                "description": "This course provided a sound understanding of the software development process and the skills to take the lead in analysing complex problems and designing solutions. The Postgraduate Diploma modules studied previously provided case study-driven learning, to provide extensible knowledge that can be applied to lead technological and organisational change in the business environment. Following completion of the Postgraduate Diploma, the final MSc dissertation module drew together the knowledge and skills gained, in a research-based project."
+            },
+            {
+                "title": "Postgraduate Diploma in Software Development",
+                "date": "2012 – 2014",
+                "company": "The Open University",
+                "description": "The Software Development Programme developed a broad and critical understanding of all the processes for engineering high-quality software and the principles, concepts and techniques associated with software development. An ability to analyse and evaluate problems and draw on the theoretical and technical knowledge to develop solutions and systems. A range of skills focused on the analysis of requirements, design and implementation of reliable and maintainable software, with strong emphasis on engineering principles applied over the whole development lifecycle. A range of optional modules allows you to further your knowledge in closely related and more specialised areas such as project management, distributed systems and architectures of operating systems."
+            },
+            {
+                "title": "BEng (Hons) Electrical & Electronic Engineering - 2:1",
+                "date": "2000 – 2002",
+                "company": "South Bank University",
+                "description": "Electrical and Electronics Engineering is all about designing, developing and maintaining electrical control systems. Engineers in this sector help to make sure our electronics and electrics are safe and reliable, and capable of performing to high standards of quality. The impact of these engineers can be felt across many sectors. This course offered a balanced programme of electronics, electrical systems, microcontrollers, control systems and telecommunications, supported by basic modules in analysis, software, and engineering science. As a BEng programme, the course offered an opportunity to acquire a deeper understanding of the essential facts, concepts, theories and principles of electrical engineering and its underpinning science and mathematics."
+            },
+            {
+                "title": "HND Electrical & Electronic Engineering",
+                "date": "1998 – 2000",
+                "company": "South Bank University",
+                "description": "The course covered a broad base of core modules with the opportunity to select some modules in the second year. This provided the fundamental knowledge to become rapidly established in the chosen field. Part of the course also involved undertaking a practical project. A lot of experience in using industry standard equipment and simulation packages was gained. The electronics work started with learning to design, construct and test many standard digital and analogue circuits. Coverage then progressed to the design of multistage and programmable circuits for use in larger system applications where computer and microprocessor interfacing becomes an important design element. The course also included Industrial Studies, which was an introduction to industrial and commercial practice, as well as development of report writing, communication, team working and project planning skills."
+            }
+        ]
+    }
+}

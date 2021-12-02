@@ -1,0 +1,37 @@
+{
+    "azure": {
+        "title": "Microsoft Azure",
+        "certifications": [
+            {
+                "title": "Azure Solutions Architect Expert",
+                "image": "azure-solutions-architect-expert-600x600.png",
+                "imageAlt": "azure solutions architect expert"
+            },
+            {
+                "title": "DevOps Engineer Expert",
+                "image": "azure-devops-engineer-expert-600x600.png",
+                "imageAlt": "azure devops engineer expert"
+            },
+            {
+                "title": "Associate Developer",
+                "image": "azure-developer-associate-600x600.png",
+                "imageAlt": "azure developer associate"
+            },
+            {
+                "title": "Azure Fundamentals",
+                "image": "azure-fundamentals-600x600.png",
+                "imageAlt": "azure fundamentals"
+            }
+        ]
+    },
+    "scrum": {
+        "title": "Scrum",
+        "certifications": [
+            {
+                "title": "Scrum Master",
+                "image": "seal-csm.png",
+                "imageAlt": "certified scrum master"
+            }
+        ]
+    }
+}

@@ -3,30 +3,34 @@
     <section class="home-content">
       <div class="section-inner">
         <div class="page-header">
-          <div class="row">
-            <div class="photo">
-              <img src="images/photo.png" />
+          <div class="flex flex-wrap">
+            <div class="w-full md:w-1/2 lg:w-1/3">
+              <div class="photo">
+                <img src="images/photo.png" />
+              </div>
             </div>
-            <div class="header">
-              <h1>Stuart Leaver</h1>
-              <span class="roles">Software Engineer</span>
-              <div class="social-media-links">
-                <a href="https://github.com/stuartleaver" target="_blank"
-                  ><font-awesome-icon :icon="['fab', 'github']" size="lg"
-                /></a>
-                <a href="https://twitter.com/stuartleaveruk" target="_blank"
-                  ><font-awesome-icon :icon="['fab', 'twitter']" size="lg"
-                /></a>
-                <a
-                  href="https://uk.linkedin.com/in/stuartleaveruk"
-                  target="_blank"
-                  ><font-awesome-icon :icon="['fab', 'linkedin']" size="lg"
-                /></a>
-                <a
-                  href="https://www.instagram.com/stuartleaver/"
-                  target="_blank"
-                  ><font-awesome-icon :icon="['fab', 'instagram']" size="lg"
-                /></a>
+            <div class="w-full md:w-1/2 lg:w-2/3">
+              <div class="header">
+                <h1>Stuart Leaver</h1>
+                <span class="roles">Software Engineer</span>
+                <div class="social-media-links">
+                  <a href="https://github.com/stuartleaver" target="_blank"
+                    ><font-awesome-icon :icon="['fab', 'github']" size="lg"
+                  /></a>
+                  <a href="https://twitter.com/stuartleaveruk" target="_blank"
+                    ><font-awesome-icon :icon="['fab', 'twitter']" size="lg"
+                  /></a>
+                  <a
+                    href="https://uk.linkedin.com/in/stuartleaveruk"
+                    target="_blank"
+                    ><font-awesome-icon :icon="['fab', 'linkedin']" size="lg"
+                  /></a>
+                  <a
+                    href="https://www.instagram.com/stuartleaver/"
+                    target="_blank"
+                    ><font-awesome-icon :icon="['fab', 'instagram']" size="lg"
+                  /></a>
+                </div>
               </div>
             </div>
           </div>
@@ -51,7 +55,7 @@
           </div> -->
           <div class="testimonials">
             <BlockTitle title="Testimonials" />
-            <div class="grid grid-cols-2">
+            <div class="grid lg:grid-cols-2 md:grid-cols-1">
               <TestimonialItem
                 v-for="testimonial in testimonials"
                 :key="testimonial.author"
@@ -95,9 +99,6 @@ export default {
 </script>
 
 <style lang="postcss" scoped>
-.home-container {
-}
-
 .home-content {
   @apply max-w-5xl mx-auto;
 }
@@ -114,16 +115,12 @@ export default {
   @apply bg-white;
 }
 
-.row {
-  @apply flex justify-between;
-}
-
 .photo {
-  @apply max-w-xxs -mb-20 border-4 border-white shadow-md;
+  @apply max-w-xxs -mb-20 border-4 border-white shadow-md min-w-photo;
 }
 
 .header {
-  @apply flex-1 text-center text-white;
+  @apply text-center text-white;
 }
 
 .header h1 {
@@ -164,5 +161,20 @@ export default {
 
 .cv-button {
   @apply bg-white hover:shadow-lg font-semibold py-2 px-4 border border-gray-400 rounded shadow;
+}
+
+@media only screen and (max-width: 1036px) {
+  .home-content {
+    @apply mx-4;
+  }
+}
+
+@media only screen and (max-width: 769px) {
+  .home-content {
+    @apply mx-4;
+  }
+  .photo {
+    @apply mx-auto my-0;
+  }
 }
 </style>

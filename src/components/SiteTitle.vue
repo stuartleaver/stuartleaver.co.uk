@@ -20,7 +20,7 @@ export default {
 </script>
 <style lang="postcss">
 .site-title {
-  @apply mt-9 text-xl font-medium text-black;
+  @apply pl-3 mt-9 text-xl font-medium text-black;
 }
 
 .site-title-text span {

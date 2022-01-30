@@ -116,7 +116,7 @@ export default {
 }
 
 .photo {
-  @apply max-w-xxs -mb-20 border-4 border-white shadow-md min-w-photo;
+  @apply max-w-xxs -mb-20 border-4 border-white shadow-md md:min-w-photo;
 }
 
 .header {

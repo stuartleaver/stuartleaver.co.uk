@@ -4,7 +4,7 @@ import router from "./router";
 import "./assets/tailwind.css";
 import "./assets/tailwind.css";
 import { library } from "@fortawesome/fontawesome-svg-core";
-import { faQuoteLeft } from "@fortawesome/free-solid-svg-icons";
+import { faQuoteLeft, faBars } from "@fortawesome/free-solid-svg-icons";
 import {
   faTwitter,
   faLinkedin,
@@ -13,7 +13,7 @@ import {
 } from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
-library.add(faQuoteLeft, faTwitter, faLinkedin, faInstagram, faGithub);
+library.add(faQuoteLeft, faTwitter, faLinkedin, faInstagram, faGithub, faBars);
 
 createApp(App)
   .component("font-awesome-icon", FontAwesomeIcon)

@@ -7,7 +7,7 @@
         </div>
         <div class="page-content">
           <Loader v-if="loading" />
-          <div class="grid grid-cols-2">
+          <div class="grid lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-1">
             <BlogItem v-for="item in items" :key="item.id" :item="item" />
           </div>
         </div>
@@ -40,6 +40,7 @@ export default {
       this.loading = true;
 
       await axios
+        // .get("/data/blog.json")
         .get("/api/getblogposts")
         .then((response) => {
           response.data.forEach((item) => {
@@ -89,5 +90,17 @@ export default {
 
 .block-content {
   @apply px-4;
+}
+
+@media only screen and (max-width: 1036px) {
+  .blog-content {
+    @apply mx-4;
+  }
+}
+
+@media only screen and (max-width: 769px) {
+  .blog-content {
+    @apply mx-4;
+  }
 }
 </style>

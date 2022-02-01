@@ -11,7 +11,7 @@
           :key="group.title"
         >
           <BlockTitle :title="group.title" />
-          <div class="grid grid-cols-3">
+          <div class="grid lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-1">
             <CertificationItem
               v-for="certification in group.certifications"
               :key="certification.title"
@@ -75,5 +75,17 @@ export default {
 
 .page-content {
   @apply px-12 py-8;
+}
+
+@media only screen and (max-width: 1036px) {
+  .certifications-content {
+    @apply mx-4;
+  }
+}
+
+@media only screen and (max-width: 769px) {
+  .certifications-content {
+    @apply mx-4;
+  }
 }
 </style>

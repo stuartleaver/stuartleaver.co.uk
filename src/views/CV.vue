@@ -6,7 +6,7 @@
           <h2>CV</h2>
         </div>
         <div class="page-content">
-          <div class="grid grid-cols-2">
+          <div class="grid lg:grid-cols-2 md:grid-cols-1">
             <div
               class="block-content"
               v-for="group in experience"
@@ -87,5 +87,17 @@ export default {
 
 .timeline {
   @apply py-4 border-l-2;
+}
+
+@media only screen and (max-width: 1036px) {
+  .cv-container {
+    @apply mx-4;
+  }
+}
+
+@media only screen and (max-width: 769px) {
+  .cv-container {
+    @apply mx-4;
+  }
 }
 </style>

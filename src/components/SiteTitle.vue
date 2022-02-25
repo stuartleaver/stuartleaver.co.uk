@@ -1,6 +1,6 @@
 <template>
   <div class="site-title">
-    <a href="index.html" class="flex">
+    <a href="/" class="flex">
       <div class="flex justify-center items-center">
         <div class="site-title-text">
           {{ firstName }} <span>{{ lastName }}</span>

@@ -74,7 +74,7 @@ export default {
 }
 
 .page-header h2 {
-  @apply text-white text-5xl font-semibold;
+  @apply text-white lg:text-5xl sm:text-4xl font-semibold;
 }
 
 .page-content {

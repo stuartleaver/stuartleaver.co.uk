@@ -1,6 +1,40 @@
 <template>
   <div id="page-container" class="page-container">
-    <header id="site-header" class="header">
+    <header class="primary-header flex">
+      <div class="logo">
+        <SiteTitle first-name="Stuart" last-name="Leaver" />
+      </div>
+
+      <button
+        class="mobile-nav-toggle"
+        aria-controls="primary-navigation"
+        :aria-expanded="expanded"
+        v-on:click="toggleNavbar()"
+      >
+        <span class="sr-only">Menu</span>
+      </button>
+      <nav>
+        <ul
+          id="primary-navigation"
+          :data-visible="visible"
+          class="primary-navigation underline-indicators flex"
+        >
+          <li class="active">
+            <a class="uppercase" href="index.html">Home</a>
+          </li>
+          <li>
+            <a class="uppercase" href="destination.html">Features</a>
+          </li>
+          <li>
+            <a class="uppercase" href="crew.html">Price</a>
+          </li>
+          <li>
+            <a class="uppercase" href="technology.html">Contact</a>
+          </li>
+        </ul>
+      </nav>
+    </header>
+    <!-- <header id="site-header" class="header">
       <div
         class="
           header-content
@@ -69,7 +103,7 @@
           </nav>
         </div>
       </div>
-    </header>
+    </header> -->
     <router-view />
     <SiteFooter />
   </div>
@@ -88,12 +122,14 @@ export default {
   },
   data() {
     return {
-      showMenu: false,
+      expanded: false,
+      visible: false,
     };
   },
   methods: {
-    toggleNavbar: function () {
-      this.showMenu = !this.showMenu;
+    toggleNavbar() {
+      this.visible = !this.visible;
+      this.expanded = !this.expanded;
     },
   },
   watch: {
@@ -105,7 +141,62 @@ export default {
 </script>
 
 <style lang="postcss">
-.page-container {
+/* flex */
+.flex {
+  @apply gap-4;
+}
+
+/* primary header */
+.logo {
+  @apply text-4xl font-bold tracking-normal uppercase m-6 p-0;
+}
+
+.primary-header {
+  @apply items-center justify-between;
+}
+
+.mobile-nav-toggle {
+  @apply hidden;
+}
+
+.primary-navigation {
+  @apply list-none p-0 m-0 bg-opacity-75 text-lg font-semibold;
+}
+
+.primary-navigation a {
+  @apply no-underline;
+}
+
+@media (max-width: 35em) {
+  .primary-navigation {
+    @apply gap-12 fixed inset-0 left-1/3 flex-col z-1000 text-white;
+    @apply transform translate-x-full;
+    @apply bg-blue-500;
+    /* background: hsl(0 0% 0% / 0.75); */
+    padding: min(30vh, 10rem) 2em;
+    transition: transform 350ms ease-out;
+  }
+
+  .primary-navigation[data-visible="true"] {
+    @apply transform translate-x-0;
+  }
+
+  .mobile-nav-toggle {
+    @apply block absolute bg-transparent bg-icon-hamburger bg-no-repeat w-8 border-0 top-8 right-8 z-9999;
+    aspect-ratio: 1;
+  }
+
+  .mobile-nav-toggle[aria-expanded="true"] {
+    @apply bg-icon-close;
+  }
+}
+
+@media (min-width: 35em) {
+  .primary-navigation {
+    @apply p-4;
+  }
+}
+/* .page-container {
 }
 
 .header-content {
@@ -182,5 +273,5 @@ a.router-link-active {
 
 .menu-button {
   @apply text-black cursor-pointer text-xl leading-none px-3 py-1 border border-solid border-transparent rounded bg-transparent block lg:hidden outline-none focus:outline-none;
-}
+} */
 </style>

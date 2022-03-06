@@ -57,13 +57,20 @@ export default {
   },
   methods: {
     toggleNavbar() {
+      this.toggleNavbarVisabilityOptions();
+    },
+    toggleNavbarVisabilityOptions() {
       this.visible = !this.visible;
       this.expanded = !this.expanded;
     },
   },
   watch: {
     $route() {
-      this.showMenu = false;
+      console.log(this.visible);
+      console.log(this.expanded);
+      this.toggleNavbarVisabilityOptions();
+      console.log(this.visible);
+      console.log(this.expanded);
     },
   },
 };
@@ -134,7 +141,7 @@ a.router-link-active {
   }
 
   .primary-navigation {
-    @apply gap-12 fixed inset-0 left-1/3 flex-col z-1000;
+    @apply gap-8 fixed inset-0 left-1/3 flex-col z-1000 text-center;
     @apply transform translate-x-full;
     @apply bg-blue-500;
     /* background: hsl(0 0% 0% / 0.75); */
@@ -143,7 +150,7 @@ a.router-link-active {
   }
 
   .primary-navigation a {
-    @apply text-white;
+    @apply text-white mx-0;
   }
 
   .primary-navigation a:after {

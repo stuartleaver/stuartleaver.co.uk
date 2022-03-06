@@ -66,11 +66,7 @@ export default {
   },
   watch: {
     $route() {
-      console.log(this.visible);
-      console.log(this.expanded);
       this.toggleNavbarVisabilityOptions();
-      console.log(this.visible);
-      console.log(this.expanded);
     },
   },
 };

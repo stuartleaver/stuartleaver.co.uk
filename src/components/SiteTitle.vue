@@ -1,7 +1,7 @@
 <template>
   <div class="site-title">
     <a href="/" class="flex">
-      <div class="flex justify-center items-center">
+      <div class="flex justify-center">
         <div class="site-title-text">
           {{ firstName }} <span>{{ lastName }}</span>
         </div>
@@ -25,5 +25,16 @@ export default {
 
 .site-title-text span {
   @apply text-blue-500;
+}
+
+@media (max-width: 35em) {
+  .site-title {
+    @apply mt-0 align-middle;
+  }
+
+  .site-title-text,
+  .site-title-text span {
+    @apply text-white;
+  }
 }
 </style>

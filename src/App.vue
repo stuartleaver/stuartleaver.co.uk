@@ -30,6 +30,11 @@
           <li>
             <router-link to="/blog" class="site-menu-item">Blog</router-link>
           </li>
+          <li>
+            <router-link to="/contact" class="site-menu-item"
+              >Contact</router-link
+            >
+          </li>
         </ul>
       </nav>
     </header>
@@ -61,7 +66,6 @@ export default {
       this.expanded = !this.expanded;
     },
     toggleNavbarVisabilityOptions() {
-      console.log("toggleNavbarVisabilityOptions");
       if (this.visible || this.expanded) {
         this.visible = !this.visible;
         this.expanded = !this.expanded;

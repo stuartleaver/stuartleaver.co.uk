@@ -57,11 +57,15 @@ export default {
   },
   methods: {
     toggleNavbar() {
-      this.toggleNavbarVisabilityOptions();
-    },
-    toggleNavbarVisabilityOptions() {
       this.visible = !this.visible;
       this.expanded = !this.expanded;
+    },
+    toggleNavbarVisabilityOptions() {
+      console.log("toggleNavbarVisabilityOptions");
+      if (this.visible || this.expanded) {
+        this.visible = !this.visible;
+        this.expanded = !this.expanded;
+      }
     },
   },
   watch: {

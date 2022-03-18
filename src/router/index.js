@@ -10,19 +10,22 @@ const routes = [
   {
     path: "/cv",
     name: "CV",
-    component: () => import(/* webpackChunkName: "about" */ "../views/CV.vue"),
+    component: () => import("../views/CV.vue"),
   },
   {
     path: "/certifications",
     name: "Certifications",
-    component: () =>
-      import(/* webpackChunkName: "about" */ "../views/Certifications.vue"),
+    component: () => import("../views/Certifications.vue"),
   },
   {
     path: "/blog",
     name: "Blog",
-    component: () =>
-      import(/* webpackChunkName: "about" */ "../views/Blog.vue"),
+    component: () => import("../views/Blog.vue"),
+  },
+  {
+    path: "/:pathMatch(.*)*",
+    name: "PageNotFound",
+    component: () => import("../views/error/PageNotFound.vue"),
   },
 ];
 

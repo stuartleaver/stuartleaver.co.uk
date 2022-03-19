@@ -6,9 +6,49 @@
           <div class="page-header">
             <h2>Contact</h2>
           </div>
-          <div class="flex flex-col">
-            Please use LinkedIn to contact me for professional enquires. For all
-            other options, please use my other socials.
+          <div class="">
+            <p>
+              Please use LinkedIn to contact me for professional enquires. For
+              all other options, please use my other socials.
+            </p>
+            <div class="socials">
+              <div class="social-link bg-linkedin-blue">
+                <a
+                  href="https://uk.linkedin.com/in/stuartleaveruk"
+                  target="_blank"
+                  ><font-awesome-icon
+                    :icon="['fab', 'linkedin']"
+                    size="lg"
+                  />&nbsp;LinkedIn</a
+                >
+              </div>
+              <div class="social-link bg-github-black">
+                <a href="https://github.com/stuartleaver" target="_blank"
+                  ><font-awesome-icon
+                    :icon="['fab', 'github']"
+                    size="lg"
+                  />&nbsp;GitHub</a
+                >
+              </div>
+              <div class="social-link bg-twitter-blue">
+                <a href="https://twitter.com/stuartleaveruk" target="_blank"
+                  ><font-awesome-icon
+                    :icon="['fab', 'twitter']"
+                    size="lg"
+                  />&nbsp;Twitter</a
+                >
+              </div>
+              <div class="social-link bg-instagram-magenta">
+                <a
+                  href="https://www.instagram.com/stuartleaver/"
+                  target="_blank"
+                  ><font-awesome-icon
+                    :icon="['fab', 'instagram']"
+                    size="lg"
+                  />&nbsp;Instagram</a
+                >
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -39,5 +79,35 @@ export default {
 
 .page-content {
   @apply px-12 py-8;
+}
+
+p {
+  @apply p-8;
+}
+
+.socials {
+  @apply flex flex-wrap justify-center;
+}
+
+.social-link {
+  @apply w-52 mx-auto text-white p-2 rounded mb-4;
+}
+
+@media (max-width: 35em) {
+  .social-link {
+    @apply flex-col;
+  }
+}
+
+@media only screen and (max-width: 1036px) {
+  .contact-container {
+    @apply mx-4;
+  }
+}
+
+@media only screen and (max-width: 769px) {
+  .contact-container {
+    @apply mx-4;
+  }
 }
 </style>

@@ -10,6 +10,12 @@ module.exports = {
       boxShadow: {
         timeline: "0px 0px 3px 0px rgb(0 0 0 / 20%)",
       },
+      colors: {
+        "github-black": "#171515",
+        "instagram-magenta": "#C32AA3",
+        "linkedin-blue": "#0077B5",
+        "twitter-blue": "#1DA1F2",
+      },
       minWidth: {
         photo: "200px",
       },

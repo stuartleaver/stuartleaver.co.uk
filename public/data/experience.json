@@ -4,7 +4,13 @@
         "items": [
             {
                 "title": "Senior Software Engineer",
-                "date": "06/2019 - Present",
+                "date": "06/2022 - Present",
+                "company": "Brit Insurance",
+                "description": ""
+            },
+            {
+                "title": "Senior Software Engineer",
+                "date": "06/2019 - 05/2022",
                 "company": "HX (inc Psyon)",
                 "description": "Working as the lead on several projects with teams of the best minds in specialty insurance, data analytics, insurtech and design to transform insurance from the inside out."
             },
